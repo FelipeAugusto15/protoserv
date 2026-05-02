@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "api.security.token.secret",
+  "type": "java.lang.String",
+  "description": "A secret key used for signing JWT tokens. It should be a long and secure string to ensure the integrity and security of the tokens. The value can be set through the application properties or environment variable JWT_SECRET."
+}]}
