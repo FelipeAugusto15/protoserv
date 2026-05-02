@@ -6,6 +6,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.protoserv.model.Perfil;
+
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -16,22 +18,22 @@ public class JwtService {
     @Value("${api.security.token.secret}")
     private String secretKey;
 
-    public String gerarToken(String username, String perfil) {
+    public String gerarToken(String username, Perfil perfil) {
         long tempoExpiracao = calcularTempoExpiracao(perfil);
 
         return Jwts.builder()
                 .subject(username)
-                .claim("perfil", perfil)
+                .claim("perfil", perfil.name())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + tempoExpiracao))
                 .signWith(getSigningKey())
                 .compact();
     }
 
-    private long calcularTempoExpiracao(String perfil) {
+    private long calcularTempoExpiracao(Perfil perfil) {
         long umaHoraEmMilissegundos = 3600000;
         
-        if ("ADMIN".equalsIgnoreCase(perfil) || "ATENDENTE".equalsIgnoreCase(perfil)) {
+        if (perfil == Perfil.ADMIN || perfil == Perfil.ATENDENTE) {
             return 12 * umaHoraEmMilissegundos;
         } else {
             return 2 * umaHoraEmMilissegundos;
