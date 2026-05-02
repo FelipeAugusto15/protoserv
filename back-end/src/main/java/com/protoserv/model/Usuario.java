@@ -20,13 +20,13 @@ public class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-    String nome;
-    String email;
-    String senha;
+    private Long id;
+    private String nome;
+    private String email;
+    private String senha;
 
     @Enumerated(EnumType.STRING)
-    Perfil pefil;
+    private Perfil perfil;
     @Enumerated(EnumType.STRING)
-    StatusUsuario status = StatusUsuario.ATIVO;
+    private StatusUsuario status = StatusUsuario.ATIVO;
 }

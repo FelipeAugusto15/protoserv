@@ -21,14 +21,14 @@ public class ApplicationConfig {
     public ApplicationConfig(UsuarioRepository repository) {
         this.repository = repository;
     }
-    
+
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> repository.findByEmail(username)
                 .map(usuario -> User.builder()
                         .username(usuario.getEmail())
                         .password(usuario.getSenha())
-                        .roles(usuario.getPefil().name()) 
+                        .roles(usuario.getPerfil().name()) 
                         .build())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuário não encontrado: " + username));
     }
