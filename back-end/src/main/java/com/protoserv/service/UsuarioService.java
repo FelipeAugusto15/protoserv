@@ -1,6 +1,6 @@
 package com.protoserv.service;
 
-import com.protoserv.dto.request.DadosListagemUsuarioDTO;
+import com.protoserv.dto.response.DadosListagemUsuarioDTO;
 import com.protoserv.model.StatusUsuario;
 import com.protoserv.model.Usuario;
 import com.protoserv.repository.UsuarioRepository;

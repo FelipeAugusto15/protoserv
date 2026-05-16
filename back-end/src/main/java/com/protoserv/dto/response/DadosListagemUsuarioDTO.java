@@ -1,4 +1,4 @@
-package com.protoserv.dto.request;
+package com.protoserv.dto.response;
 
 import com.protoserv.model.Perfil;
 import com.protoserv.model.StatusUsuario;
