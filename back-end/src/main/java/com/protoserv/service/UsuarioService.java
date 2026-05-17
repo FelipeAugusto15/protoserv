@@ -33,17 +33,20 @@ public class UsuarioService {
 
     @Transactional
     public void inativarUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        Usuario usuario = buscarUsuario(id);
 
         usuario.inativar();
     }
 
     @Transactional
     public void ativarUsuario(Long id) {
-        Usuario usuario = usuarioRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
+        Usuario usuario = buscarUsuario(id);
 
         usuario.ativar();
+    }
+
+    private Usuario buscarUsuario(Long id) {
+        return usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
     }
 }
