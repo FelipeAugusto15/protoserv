@@ -33,9 +33,42 @@ public class Usuario implements UserDetails {
     private String senha;
 
     @Enumerated(EnumType.STRING)
-    private Perfil perfil;
+    private Perfil perfil = Perfil.CIDADAO;
     @Enumerated(EnumType.STRING)
     private StatusUsuario status = StatusUsuario.ATIVO;
+
+    public Usuario(String nome, String email, String senha) {
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+    }
+
+    public Usuario(String nome, String email, String senha, Perfil perfil) {
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+        this.perfil = perfil;
+    }
+
+    public static Usuario criarAdmin(String nome, String email, String senha) {
+        return new Usuario(nome, email, senha, Perfil.ADMIN);
+    }
+
+    public void inativar() {
+        if (this.status == StatusUsuario.INATIVO) {
+            throw new IllegalArgumentException("O usuário já está inativo.");
+        }
+
+        this.status = StatusUsuario.INATIVO;
+    }
+
+    public void ativar() {
+        if (this.status == StatusUsuario.ATIVO) {
+            throw new IllegalArgumentException("O usuário já está ativo.");
+        }
+
+        this.status = StatusUsuario.ATIVO;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

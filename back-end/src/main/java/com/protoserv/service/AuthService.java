@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.protoserv.dto.request.DadosLoginDTO;
 import com.protoserv.dto.request.DadosRegistroDTO;
 import com.protoserv.dto.response.DadosAutenticacaoDTO;
-import com.protoserv.model.Perfil;
 import com.protoserv.model.StatusUsuario;
 import com.protoserv.model.Usuario;
 import com.protoserv.repository.UsuarioRepository;
@@ -44,11 +43,7 @@ public class AuthService {
             throw new IllegalArgumentException("Este e-mail já está em uso.");
         }
 
-        Usuario usuario = new Usuario();
-        usuario.setNome(registro.nome());
-        usuario.setEmail(registro.email());
-        usuario.setSenha(passwordEncoder.encode(registro.senha()));
-        usuario.setPerfil(Perfil.CIDADAO);
+        Usuario usuario = new Usuario(registro.nome(), registro.email(), passwordEncoder.encode(registro.senha()));
 
         usuarioRepository.save(usuario);
         log.info("Usuário {} registrado com sucesso sob o perfil CIDADAO.", registro.email());
