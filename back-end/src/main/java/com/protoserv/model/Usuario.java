@@ -33,9 +33,15 @@ public class Usuario implements UserDetails {
     private String senha;
 
     @Enumerated(EnumType.STRING)
-    private Perfil perfil;
+    private Perfil perfil = Perfil.CIDADAO;
     @Enumerated(EnumType.STRING)
     private StatusUsuario status = StatusUsuario.ATIVO;
+
+    public Usuario(String nome, String email, String senha) {
+        this.nome = nome;
+        this.email = email;
+        this.senha = senha;
+    }
 
     public void inativar() {
         if (this.status == StatusUsuario.INATIVO) {
