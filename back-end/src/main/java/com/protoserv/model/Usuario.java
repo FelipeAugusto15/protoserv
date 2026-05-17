@@ -37,6 +37,22 @@ public class Usuario implements UserDetails {
     @Enumerated(EnumType.STRING)
     private StatusUsuario status = StatusUsuario.ATIVO;
 
+    public void inativar() {
+        if (this.status == StatusUsuario.INATIVO) {
+            throw new IllegalArgumentException("O usuário já está inativo.");
+        }
+
+        this.status = StatusUsuario.INATIVO;
+    }
+
+    public void ativar() {
+        if (this.status == StatusUsuario.ATIVO) {
+            throw new IllegalArgumentException("O usuário já está ativo.");
+        }
+
+        this.status = StatusUsuario.ATIVO;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(perfil.name()));

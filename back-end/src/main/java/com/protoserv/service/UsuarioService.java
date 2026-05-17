@@ -36,11 +36,7 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        if (usuario.getStatus() == StatusUsuario.INATIVO) {
-            throw new IllegalArgumentException("O usuário já está inativo.");
-        }
-        
-        usuario.setStatus(StatusUsuario.INATIVO);
+        usuario.inativar();
     }
 
     @Transactional
@@ -48,10 +44,6 @@ public class UsuarioService {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado."));
 
-        if (usuario.getStatus() == StatusUsuario.ATIVO) {
-            throw new IllegalArgumentException("O usuário já está ativo.");
-        }
-
-        usuario.setStatus(StatusUsuario.ATIVO);
+        usuario.ativar();
     }
 }
