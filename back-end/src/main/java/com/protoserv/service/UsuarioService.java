@@ -1,6 +1,7 @@
 package com.protoserv.service;
 
 import com.protoserv.dto.request.DadosAlterarSenhaDTO;
+import com.protoserv.dto.request.DadosEdicaoUsuarioDTO;
 import com.protoserv.dto.response.DadosListagemUsuarioDTO;
 import com.protoserv.dto.response.DadosPerfilDTO;
 import com.protoserv.model.StatusUsuario;
@@ -69,6 +70,15 @@ public class UsuarioService {
 
         String novaSenhaCriptografada = passwordEncoder.encode(dto.novaSenha());
         usuario.atualizarSenha(novaSenhaCriptografada);
+    }
+
+    @Transactional
+    public DadosPerfilDTO atualizarDadosUsuario(String email, DadosEdicaoUsuarioDTO dadosEdicao) {
+        Usuario usuario = buscarPorEmail(email);
+
+        usuario.atualizarDadosUsuario(dadosEdicao.nome());
+
+        return new DadosPerfilDTO(usuario);
     }
 
     private Usuario buscarPorEmail(String email) {
