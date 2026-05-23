@@ -77,6 +77,14 @@ public class Usuario implements UserDetails {
         this.senha = novaSenhaCriptografada;
     }
 
+    public void atualizarDadosUsuario(String novoNome) {
+        if (novoNome == null || novoNome.trim().isBlank()) {
+            throw new IllegalArgumentException("O nome não pode ser nulo ou vazio.");
+        }
+
+        this.nome = novoNome;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(perfil.name()));
