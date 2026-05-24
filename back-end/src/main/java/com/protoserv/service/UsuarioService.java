@@ -1,9 +1,11 @@
 package com.protoserv.service;
 
 import com.protoserv.dto.request.DadosAlterarSenhaDTO;
+import com.protoserv.dto.request.DadosEdicaoUsuarioAdminDTO;
 import com.protoserv.dto.request.DadosEdicaoUsuarioDTO;
 import com.protoserv.dto.response.DadosListagemUsuarioDTO;
 import com.protoserv.dto.response.DadosPerfilDTO;
+import com.protoserv.model.Perfil;
 import com.protoserv.model.StatusUsuario;
 import com.protoserv.model.Usuario;
 import com.protoserv.repository.UsuarioRepository;
@@ -77,6 +79,18 @@ public class UsuarioService {
         Usuario usuario = buscarPorEmail(email);
 
         usuario.atualizarDadosUsuario(dadosEdicao.nome());
+
+        return new DadosPerfilDTO(usuario);
+    }
+
+    @Transactional
+    public DadosPerfilDTO atualizarUsuarioPeloAdmin(Long id, DadosEdicaoUsuarioAdminDTO dadosEdicao) {
+        Usuario usuario = buscarUsuario(id);
+
+        Perfil perfilEnum = Perfil.valueOf(dadosEdicao.perfil().toUpperCase());
+
+        usuario.atualizarDadosUsuario(dadosEdicao.nome());
+        usuario.alterarDadosUsuarioPerfilAdmin(perfilEnum);
 
         return new DadosPerfilDTO(usuario);
     }
