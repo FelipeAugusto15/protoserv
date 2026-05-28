@@ -1,6 +1,7 @@
 package com.protoserv.service;
 
 import com.protoserv.dto.request.DadosAlterarSenhaDTO;
+import com.protoserv.dto.request.DadosCriarUsuarioDTO;
 import com.protoserv.dto.request.DadosEdicaoUsuarioAdminDTO;
 import com.protoserv.dto.request.DadosEdicaoUsuarioDTO;
 import com.protoserv.dto.response.DadosListagemUsuarioDTO;
@@ -25,6 +26,22 @@ public class UsuarioService {
     public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
+    }
+
+    public DadosPerfilDTO criarUsuario(DadosCriarUsuarioDTO dados) {
+        if (usuarioRepository.findByEmail(dados.email()).isPresent()) {
+            throw new IllegalArgumentException("O e-mail já está em uso.");
+        }
+
+        Perfil perfilUsuario = Perfil.valueOf(dados.perfil().toUpperCase());
+        
+        String senhaCriptografada = passwordEncoder.encode(dados.senha());
+
+        Usuario usuario = new Usuario(dados.nome(), dados.email(), senhaCriptografada, perfilUsuario);
+        
+        usuarioRepository.save(usuario);
+
+        return new DadosPerfilDTO(usuario);
     }
 
     public Page<DadosListagemUsuarioDTO> listarUsuario(StatusUsuario status, Pageable paginacao) {
