@@ -1,13 +1,15 @@
 package com.protoserv.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+@Getter
 @NoArgsConstructor
 @Entity
 @Table(name = "servicos")
+@EqualsAndHashCode(of = "id")
 public class Servico {
 
     @Id
