@@ -22,8 +22,8 @@ public class OpenApiConfig {
                         .description("API REST para gestão de serviços públicos.")
                         .version("v1.0.0")
                         .contact(new Contact()
-                                .name("Seu Nome")
-                                .email("seuemail@exemplo.com")))
+                                .name("Eduardo Alan dos Santos")
+                                .email("edualansatos@gmail.com")))
                 
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 
