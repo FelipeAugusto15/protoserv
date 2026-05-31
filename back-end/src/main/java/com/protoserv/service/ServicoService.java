@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.protoserv.dto.request.DadosCriarServicoDTO;
+import com.protoserv.dto.request.DadosEdicaoServicoDTO;
 import com.protoserv.dto.response.DadosListagemServicoDTO;
 import com.protoserv.dto.response.DadosServicoDTO;
 import com.protoserv.model.CategoriaServico;
@@ -55,9 +56,41 @@ public class ServicoService {
     }
 
     public DadosServicoDTO detalharServico(Long id) {
-        var servico = servicoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado na base de dados."));
+        var servico = buscarServico(id);
 
         return new DadosServicoDTO(servico);
+    }
+
+    @Transactional
+    public DadosServicoDTO atualizarServico(DadosEdicaoServicoDTO dados) {
+        var servico = buscarServico(dados.id());
+
+        CategoriaServico categoriaEnum = null;
+        if (dados.categoria() != null && !dados.categoria().isBlank()) {
+            categoriaEnum = CategoriaServico.valueOf(dados.categoria().toUpperCase());
+        }
+
+        servico.atualizarDados(dados, categoriaEnum);
+
+        return new DadosServicoDTO(servico);
+    }
+
+    @Transactional
+    public void desativarServico(Long id) {
+        var servico = buscarServico(id);
+        
+        servico.desativar();
+    }
+
+    @Transactional
+    public void ativarServico(Long id) {
+        var servico = buscarServico(id);
+        
+        servico.ativar();
+    }
+
+    private Servico buscarServico(Long id) {
+        return servicoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado."));
     }
 }
