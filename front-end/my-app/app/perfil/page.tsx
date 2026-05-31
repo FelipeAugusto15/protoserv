@@ -1,184 +1,168 @@
 "use client";
 
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Perfil() {
+  const router = useRouter();
 
-  // Estado de edição
   const [editando, setEditando] = useState(false);
 
-  // Estado dos dados (simulando dados vindos do backend)
   const [usuario, setUsuario] = useState({
-    nome: "Victor Gabriel",
-    email: "victor@email.com",
-    telefone: "(42) 99999-9999",
-    senha: "123456"
+    nome: "",
+    email: ""
   });
 
-  // Atualizar campos
+  const [backup, setBackup] = useState(usuario);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    async function carregar() {
+      try {
+        const res = await fetch("http://localhost:8080/usuarios/me", {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        const data = await res.json();
+
+        setUsuario({
+          nome: data.nome,
+          email: data.email
+        });
+
+        setBackup({
+          nome: data.nome,
+          email: data.email
+        });
+
+      } catch (err) {
+        router.push("/login");
+      }
+    }
+
+    carregar();
+  }, [router]);
+
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
+
     setUsuario((prev) => ({
       ...prev,
       [name]: value
     }));
   }
 
-  // Salvar (simulação)
-  function handleSalvar() {
-    console.log("Dados salvos:", usuario);
+  function cancelar() {
+    setUsuario(backup);
     setEditando(false);
   }
 
-  // Cancelar edição
-  function handleCancelar() {
-    setEditando(false);
+  async function salvar() {
+    const token = localStorage.getItem("token");
+
+    try {
+      const res = await fetch("http://localhost:8080/usuarios/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(usuario)
+      });
+
+      if (!res.ok) {
+        alert("Erro ao salvar");
+        return;
+      }
+
+      setBackup(usuario);
+      setEditando(false);
+
+      alert("Perfil atualizado!");
+
+    } catch (err) {
+      alert("Erro ao salvar perfil");
+    }
   }
 
   return (
     <main className="flex h-screen bg-gray-900">
-      
       <Sidebar />
 
-      <div className="flex-1 flex flex-col bg-gray-100">
-        
-        {/* HEADER */}
-        <header className="bg-white px-8 py-4 border-b border-gray-200 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Meu Perfil
-          </h1>
-        </header>
+      <div className="flex-1 bg-gray-100 flex justify-center items-center p-8">
 
-        {/* CONTEÚDO */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          
-          <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-2xl">
-            
-            {/* TOPO PERFIL */}
-            <div className="flex items-center gap-4 mb-8">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center text-gray-500 text-xl font-bold">
-                {usuario.nome.charAt(0)}
-              </div>
+        <div className="bg-white p-10 rounded-2xl shadow-lg w-full max-w-2xl">
 
-              <div>
-                <h2 className="text-lg font-semibold text-gray-800">
-                  Informações do Usuário
-                </h2>
-                <p className="text-sm text-gray-500">
-                  {editando 
-                    ? "Edite seus dados abaixo"
-                    : "Visualização dos seus dados"}
-                </p>
-              </div>
+          {/* AVATAR (SÓ LETRA) */}
+          <div className="flex items-center gap-5 mb-6">
+
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold shadow-md">
+              {usuario.nome ? usuario.nome.charAt(0).toUpperCase() : "U"}
             </div>
 
-            {/* FORM */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
-              {/* NOME */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Nome
-                </label>
-                <input
-                  type="text"
-                  name="nome"
-                  value={usuario.nome}
-                  onChange={handleChange}
-                  readOnly={!editando}
-                  className={`w-full border rounded-lg px-4 py-2 outline-none 
-                  ${editando 
-                    ? "border-gray-300 focus:ring-2 focus:ring-blue-500" 
-                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              {/* EMAIL */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={usuario.email}
-                  onChange={handleChange}
-                  readOnly={!editando}
-                  className={`w-full border rounded-lg px-4 py-2 outline-none 
-                  ${editando 
-                    ? "border-gray-300 focus:ring-2 focus:ring-blue-500" 
-                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              {/* TELEFONE */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Telefone
-                </label>
-                <input
-                  type="text"
-                  name="telefone"
-                  value={usuario.telefone}
-                  onChange={handleChange}
-                  readOnly={!editando}
-                  className={`w-full border rounded-lg px-4 py-2 outline-none 
-                  ${editando 
-                    ? "border-gray-300 focus:ring-2 focus:ring-blue-500" 
-                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-              {/* SENHA */}
-              <div>
-                <label className="block text-sm text-gray-600 mb-1">
-                  Senha
-                </label>
-                <input
-                  type="password"
-                  name="senha"
-                  value={usuario.senha}
-                  onChange={handleChange}
-                  readOnly={!editando}
-                  className={`w-full border rounded-lg px-4 py-2 outline-none 
-                  ${editando 
-                    ? "border-gray-300 focus:ring-2 focus:ring-blue-500" 
-                    : "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  }`}
-                />
-              </div>
-
-            </div>
-
-            {/* BOTÕES */}
-            <div className="flex justify-end gap-4 mt-8">
-              
-              {editando && (
-                <button
-                  onClick={handleCancelar}
-                  className="px-5 py-2 rounded-lg border border-gray-300 text-gray-600 hover:bg-gray-100 transition"
-                >
-                  Cancelar
-                </button>
-              )}
-
-              <button
-                onClick={editando ? handleSalvar : () => setEditando(true)}
-                className="px-6 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
-              >
-                {editando ? "Salvar Alterações" : "Editar Perfil"}
-              </button>
-
+            <div>
+              <p className="font-semibold text-lg">
+                {usuario.nome || "Usuário"}
+              </p>
+              <p className="text-sm text-gray-500">
+                {editando ? "Editando perfil" : "Visualização do perfil"}
+              </p>
             </div>
 
           </div>
 
-        </div>
+          {/* INPUTS */}
+          <div className="space-y-4">
 
+            <input
+              name="nome"
+              value={usuario.nome}
+              onChange={handleChange}
+              disabled={!editando}
+              className="w-full border p-2 rounded"
+            />
+
+            <input
+              name="email"
+              value={usuario.email}
+              onChange={handleChange}
+              disabled={!editando}
+              className="w-full border p-2 rounded"
+            />
+
+          </div>
+
+          {/* BOTÕES */}
+          <div className="flex justify-end gap-3 mt-6">
+
+            {editando && (
+              <button
+                onClick={cancelar}
+                className="px-4 py-2 bg-gray-300 rounded"
+              >
+                Cancelar
+              </button>
+            )}
+
+            <button
+              onClick={() => (editando ? salvar() : setEditando(true))}
+              className="px-4 py-2 bg-blue-600 text-white rounded"
+            >
+              {editando ? "Salvar" : "Editar"}
+            </button>
+
+          </div>
+
+        </div>
       </div>
     </main>
   );
