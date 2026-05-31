@@ -1,12 +1,8 @@
 package com.protoserv.dto.request;
 
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 
 public record DadosEdicaoServicoDTO(
-        
-        @NotNull(message = "O ID do serviço é obrigatório.")
-        Long id,
         
         String nome,
         String descricao,

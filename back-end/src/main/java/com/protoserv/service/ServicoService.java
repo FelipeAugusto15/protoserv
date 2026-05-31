@@ -62,8 +62,8 @@ public class ServicoService {
     }
 
     @Transactional
-    public DadosServicoDTO atualizarServico(DadosEdicaoServicoDTO dados) {
-        var servico = buscarServico(dados.id());
+    public DadosServicoDTO atualizarServico(Long id, DadosEdicaoServicoDTO dados) {
+        var servico = buscarServico(id);
 
         CategoriaServico categoriaEnum = null;
         if (dados.categoria() != null && !dados.categoria().isBlank()) {

@@ -53,10 +53,12 @@ public class ServicoController {
         return ResponseEntity.ok(servico);
     }
 
-    @PutMapping
+    @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<DadosServicoDTO> atualizarServico(@RequestBody @Valid DadosEdicaoServicoDTO dados) {
-        var servicoAtualizado = servicoService.atualizarServico(dados);
+    public ResponseEntity<DadosServicoDTO> atualizarServico(
+            @PathVariable Long id, 
+            @RequestBody @Valid DadosEdicaoServicoDTO dados) {
+        var servicoAtualizado = servicoService.atualizarServico(id, dados);
 
         return ResponseEntity.ok(servicoAtualizado);
     }
@@ -73,7 +75,7 @@ public class ServicoController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<Void> ativarServico(@PathVariable Long id) {
         servicoService.ativarServico(id);
-        
+
         return ResponseEntity.noContent().build();
     }
 }
