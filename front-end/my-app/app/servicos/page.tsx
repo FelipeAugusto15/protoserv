@@ -22,6 +22,7 @@ export default function Servicos() {
 
   const [stats] = useState<Estatisticas | null>(null);
 
+  // 🔥 SERVIÇOS FIXOS (ATALHOS VISUAIS)
   const servicos: Servico[] = [
     { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas", icone: "💡" },
     { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta", icone: "🗑️" },
@@ -37,11 +38,11 @@ export default function Servicos() {
 
   return (
     <main className="flex h-screen bg-gray-900">
-      
       <Sidebar />
 
       <div className="flex-1 flex flex-col bg-gray-100">
-        
+
+        {/* HEADER */}
         <header className="bg-white px-8 py-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">
             Solicitar Serviço
@@ -50,6 +51,7 @@ export default function Servicos() {
 
         <div className="flex-1 p-8 overflow-auto">
 
+          {/* LISTA DE SERVIÇOS */}
           {!servicoSelecionado && (
             <>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -57,14 +59,15 @@ export default function Servicos() {
               </h2>
 
               <p className="text-gray-700 mb-6">
-                Aqui você pode solicitar serviços públicos de forma rápida e acompanhar o andamento.
+                Selecione rapidamente o serviço desejado para abrir um protocolo.
               </p>
 
+              {/* STATS FUTURO */}
               {stats && (
                 <div className="grid grid-cols-3 gap-4 mb-8">
                   <div className="bg-white p-4 rounded-xl shadow-sm text-center">
                     <p className="text-lg font-bold text-blue-600">{stats.total}</p>
-                    <p className="text-sm text-gray-600">Solicitações feitas</p>
+                    <p className="text-sm text-gray-600">Solicitações</p>
                   </div>
 
                   <div className="bg-white p-4 rounded-xl shadow-sm text-center">
@@ -79,6 +82,7 @@ export default function Servicos() {
                 </div>
               )}
 
+              {/* BUSCA */}
               <input
                 type="text"
                 placeholder="Buscar serviço..."
@@ -87,10 +91,7 @@ export default function Servicos() {
                 className="w-full mb-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Serviços disponíveis
-              </h3>
-
+              {/* CARDS */}
               <div className="grid grid-cols-3 gap-5">
                 {servicosFiltrados.map((servico) => (
                   <div
@@ -116,10 +117,11 @@ export default function Servicos() {
             </>
           )}
 
-          {/* FORMULÁRIO  */}
+          {/* FORMULÁRIO */}
           {servicoSelecionado && (
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
 
+              {/* VOLTAR */}
               <button
                 onClick={() => setServicoSelecionado(null)}
                 className="text-sm text-blue-600 mb-4 hover:underline"
@@ -127,6 +129,7 @@ export default function Servicos() {
                 ← Voltar
               </button>
 
+              {/* SERVIÇO SELECIONADO */}
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {servicoSelecionado.nome}
               </h3>
@@ -135,29 +138,46 @@ export default function Servicos() {
                 {servicoSelecionado.descricao}
               </p>
 
+              {/* FORMULÁRIO (PRONTO PARA BACKEND) */}
               <form
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  alert("Solicitação enviada com sucesso!");
+
+                  const form = e.target as HTMLFormElement;
+
+                  const payload = {
+                    servicoId: servicoSelecionado.id,
+                    servico: servicoSelecionado.nome,
+                    nome: (form.nome as HTMLInputElement).value,
+                    email: (form.email as HTMLInputElement).value,
+                    telefone: (form.telefone as HTMLInputElement).value,
+                    endereco: (form.endereco as HTMLInputElement).value,
+                    titulo: (form.titulo as HTMLInputElement).value,
+                    descricao: (form.descricao as HTMLTextAreaElement).value,
+                  };
+
+                  console.log("ENVIAR PARA BACKEND:", payload);
+
+                  // 🔥 FUTURO: POST /solicitacoes
+                  alert("Solicitação enviada com sucesso! (backend pendente)");
                 }}
               >
-
                 <h4 className="font-semibold text-gray-900 mt-2">
                   Dados do solicitante
                 </h4>
 
-                <input type="text" placeholder="Nome completo" className="border p-3 rounded-lg" required />
-                <input type="email" placeholder="Email para contato" className="border p-3 rounded-lg"  />
-                <input type="tel" placeholder="Telefone para contato" className="border p-3 rounded-lg" required />
-                <input type="text" placeholder="Endereço do problema" className="border p-3 rounded-lg" required />
+                <input name="nome" type="text" placeholder="Nome completo" className="border p-3 rounded-lg" required />
+                <input name="email" type="email" placeholder="Email para contato" className="border p-3 rounded-lg" />
+                <input name="telefone" type="tel" placeholder="Telefone para contato" className="border p-3 rounded-lg" required />
+                <input name="endereco" type="text" placeholder="Endereço do problema" className="border p-3 rounded-lg" required />
 
                 <h4 className="font-semibold text-gray-900 mt-4">
                   Detalhes da solicitação
                 </h4>
 
-                <input type="text" placeholder="Título do problema" className="border p-3 rounded-lg" required />
-                <textarea placeholder="Descreva o problema..." className="border p-3 rounded-lg h-28" required />
+                <input name="titulo" type="text" placeholder="Título do problema" className="border p-3 rounded-lg" required />
+                <textarea name="descricao" placeholder="Descreva o problema..." className="border p-3 rounded-lg h-28" required />
 
                 <button
                   type="submit"
@@ -165,7 +185,6 @@ export default function Servicos() {
                 >
                   Enviar Solicitação
                 </button>
-
               </form>
             </div>
           )}
