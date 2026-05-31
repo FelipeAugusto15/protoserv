@@ -5,23 +5,67 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Logo from "@/components/Logo";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Informa a tipo de evento e preventDefault para não renderizar toda a tela
-  const handleLogin = (e: React.SubmitEvent) => {
+  const router = useRouter();
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Tentando logar com:", { email, password });
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/autenticacao/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            senha: password,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        alert("E-mail ou senha inválidos");
+        return;
+      }
+
+      const data = await response.json();
+
+      //LIMPA TOKEN ANTIGO (boa prática)
+      localStorage.removeItem("token");
+
+      // SALVA NOVO TOKEN
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      } else {
+        alert("Erro ao obter token");
+        return;
+      }
+
+      alert("Login realizado com sucesso!");
+
+      router.push("/");
+    } catch (error) {
+      console.error("Erro ao fazer login:", error);
+      alert("Erro ao conectar com o servidor.");
+    }
   };
 
   return (
     <main className="flex flex-col min-h-screen items-center bg-gray-500 p-4">
       <Logo />
-      
+
       <div className="w-full max-w-sm flex flex-col gap-6 bg-white p-8 rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-center text-gray-800">Login</h1>
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          Login
+        </h1>
 
         <form onSubmit={handleLogin} className="space-y-4">
           <Input
@@ -45,11 +89,9 @@ export default function LoginPage() {
           <Button label="Acessar" type="submit" />
         </form>
 
-        <Link href={"/register"}>
-          <Button 
-          label="Quero me cadastrar"
-        />
-        </Link>        
+        <Link href="/register">
+          <Button label="Quero me cadastrar" />
+        </Link>
       </div>
     </main>
   );
