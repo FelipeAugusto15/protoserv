@@ -1,6 +1,7 @@
 package com.protoserv.model;
 
 import jakarta.persistence.*;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @Table(name = "solicitacoes")
+@EqualsAndHashCode(of = "id")
 public class Solicitacao {
 
     @Id
@@ -38,11 +40,20 @@ public class Solicitacao {
     @JoinColumn(name = "servico_id")
     private Servico servico;
 
-    public Solicitacao(String protocolo, String descricao, Endereco endereco, Servico servico, String anexoUrl) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cidadao_id")
+    private Usuario cidadao;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "atendente_id")
+    private Usuario atendente;
+
+    public Solicitacao(String protocolo, String descricao, Endereco endereco, Servico servico, Usuario cidadao, String anexoUrl) {
         this.protocolo = protocolo;
         this.descricao = descricao;
         this.endereco = endereco;
         this.servico = servico;
+        this.cidadao = cidadao;
         this.anexoUrl = anexoUrl;
         this.status = StatusSolicitacao.NOVO;
         this.prioridade = PrioridadeSolicitacao.MEDIA;
