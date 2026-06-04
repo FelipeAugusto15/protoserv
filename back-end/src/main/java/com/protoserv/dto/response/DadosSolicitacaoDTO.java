@@ -15,6 +15,8 @@ public record DadosSolicitacaoDTO(
         String logradouro,
         String numero,
         String bairro,
+        String cidade,
+        String estado,
         String complemento,
         String anexoUrl,
         LocalDateTime dataAbertura
@@ -32,6 +34,8 @@ public record DadosSolicitacaoDTO(
             solicitacao.getEndereco().getLogradouro(),
             solicitacao.getEndereco().getNumero(),
             solicitacao.getEndereco().getBairro(),
+            solicitacao.getEndereco().getCidade(),
+            solicitacao.getEndereco().getEstado(),
             solicitacao.getEndereco().getComplemento(),
             solicitacao.getAnexoUrl(),
             solicitacao.getDataAbertura()
