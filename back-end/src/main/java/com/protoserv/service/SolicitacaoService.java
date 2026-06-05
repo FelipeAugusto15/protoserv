@@ -4,6 +4,7 @@ import com.protoserv.dto.request.DadosAberturaSolicitacaoDTO;
 import com.protoserv.dto.response.DadosSolicitacaoDTO;
 import com.protoserv.model.Endereco;
 import com.protoserv.model.Solicitacao;
+import com.protoserv.model.StatusSolicitacao;
 import com.protoserv.repository.ServicoRepository;
 import com.protoserv.repository.SolicitacaoRepository;
 import com.protoserv.repository.UsuarioRepository;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -42,6 +44,21 @@ public class SolicitacaoService {
         var cidadao = usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
 
+        List<StatusSolicitacao> statusFinais = List.of(StatusSolicitacao.CONCLUIDA, StatusSolicitacao.CANCELADA);
+        var solicitacaoAtiva = solicitacaoRepository
+                .findFirstByCidadaoAndServicoAndStatusNotInOrderByDataAberturaDesc(cidadao, servico, statusFinais);
+
+        if (solicitacaoAtiva.isPresent()) {
+            var ativa = solicitacaoAtiva.get();
+            LocalDateTime dataExpiracao = ativa.getDataAbertura().plusDays(servico.getPrazoDias());
+            
+            if (LocalDateTime.now().isBefore(dataExpiracao)) {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                throw new IllegalStateException("Você já possui uma solicitação em andamento para este serviço (Protocolo: " 
+                        + ativa.getProtocolo() + "). O prazo para resolução é até " + dataExpiracao.format(formatter) + ".");
+            }
+        }
+        
         var endereco = new Endereco(
                 dados.cep(),
                 dados.logradouro(),
