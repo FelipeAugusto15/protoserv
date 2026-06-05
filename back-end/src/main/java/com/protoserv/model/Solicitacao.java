@@ -59,4 +59,16 @@ public class Solicitacao {
         this.prioridade = PrioridadeSolicitacao.MEDIA;
         this.dataAbertura = LocalDateTime.now();
     }
+
+    public void assumir(Usuario atendente) {
+        if (this.status != StatusSolicitacao.NOVO) {
+            throw new IllegalStateException("Apenas solicitações com status NOVO podem ser assumidas.");
+        }
+        if (atendente == null) {
+            throw new IllegalArgumentException("O atendente não pode ser nulo ao assumir a solicitação.");
+        }
+        
+        this.atendente = atendente;
+        this.status = StatusSolicitacao.EM_ANDAMENTO;
+    }
 }
