@@ -1,15 +1,22 @@
 package com.protoserv.controller;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import com.protoserv.dto.request.DadosAberturaSolicitacaoDTO;
+import com.protoserv.dto.response.DadosListagemSolicitacaoDTO;
 import com.protoserv.dto.response.DadosSolicitacaoDTO;
+import com.protoserv.model.StatusSolicitacao;
 import com.protoserv.service.SolicitacaoService;
 
 import jakarta.validation.Valid;
@@ -33,5 +40,16 @@ public class SolicitacaoController {
         var uri = uriBuilder.path("/solicitacoes/{id}").buildAndExpand(solicitacao.id()).toUri();
 
         return ResponseEntity.created(uri).body(solicitacao);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyAuthority('ATENDENTE', 'ADMIN')")
+    public ResponseEntity<Page<DadosListagemSolicitacaoDTO>> listar(
+            @RequestParam(required = false) StatusSolicitacao status,
+            @PageableDefault(size = 10, sort = {"dataAbertura"}) Pageable paginacao) {
+
+        var pagina = solicitacaoService.listarSolicitacoes(status, paginacao);
+        
+        return ResponseEntity.ok(pagina);
     }
 }
