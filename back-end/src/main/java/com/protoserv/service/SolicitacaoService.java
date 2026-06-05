@@ -6,6 +6,7 @@ import com.protoserv.dto.response.DadosSolicitacaoDTO;
 import com.protoserv.model.Endereco;
 import com.protoserv.model.Solicitacao;
 import com.protoserv.model.StatusSolicitacao;
+import com.protoserv.model.Usuario;
 import com.protoserv.repository.ServicoRepository;
 import com.protoserv.repository.SolicitacaoRepository;
 import com.protoserv.repository.UsuarioRepository;
@@ -43,10 +44,7 @@ public class SolicitacaoService {
         var servico = servicoRepository.findById(dados.servicoId())
                 .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado no catálogo."));
 
-        String emailUsuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
-        
-        var cidadao = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado."));
+        var cidadao = buscarUsuarioLogado();
 
         List<StatusSolicitacao> statusFinais = List.of(StatusSolicitacao.CONCLUIDA, StatusSolicitacao.CANCELADA);
         var solicitacaoAtiva = solicitacaoRepository
@@ -104,12 +102,9 @@ public class SolicitacaoService {
 
     @Transactional
     public DadosSolicitacaoDTO assumirSolicitacao(Long id) {
-        var solicitacao = solicitacaoRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada."));
+        var solicitacao = buscarSolicitacao(id);
 
-        String emailUsuarioLogado = SecurityContextHolder.getContext().getAuthentication().getName();
-        var atendenteLogado = usuarioRepository.findByEmail(emailUsuarioLogado)
-                .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado no banco de dados."));
+        var atendenteLogado = buscarUsuarioLogado();
 
         solicitacao.assumir(atendenteLogado);
 
@@ -121,5 +116,20 @@ public class SolicitacaoService {
         String codigoAleatorio = UUID.randomUUID().toString().substring(0, 6).toUpperCase(); 
         
         return dataHoje + "-" + codigoAleatorio;
+    }
+
+    private String capturarEmailUsuarioLogado() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    private Usuario buscarUsuarioLogado() {
+        String emailUsuarioLogado = capturarEmailUsuarioLogado();
+        return usuarioRepository.findByEmail(emailUsuarioLogado)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado no banco de dados."));
+    }
+
+    private Solicitacao buscarSolicitacao(Long id) {
+        return solicitacaoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Solicitação não encontrada."));
     }
 }
