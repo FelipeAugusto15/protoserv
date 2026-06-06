@@ -1,6 +1,7 @@
 package com.protoserv.service;
 
 import com.protoserv.dto.request.DadosAberturaSolicitacaoDTO;
+import com.protoserv.dto.request.DadosNovoAcompanhamentoDTO;
 import com.protoserv.dto.response.DadosListagemSolicitacaoDTO;
 import com.protoserv.dto.response.DadosSolicitacaoDTO;
 import com.protoserv.model.Endereco;
@@ -107,6 +108,21 @@ public class SolicitacaoService {
         var atendenteLogado = buscarUsuarioLogado();
 
         solicitacao.assumir(atendenteLogado);
+
+        return new DadosSolicitacaoDTO(solicitacao);
+    }
+
+    @Transactional
+    public DadosSolicitacaoDTO adicionarAcompanhamento(Long solicitacaoId, DadosNovoAcompanhamentoDTO dados) {
+        var solicitacao = buscarSolicitacao(solicitacaoId);
+
+        var usuarioLogado = buscarUsuarioLogado();
+
+        solicitacao.adicionarAcompanhamento(dados.descricao(), usuarioLogado);
+
+        if (dados.novoStatus() != null && dados.novoStatus() != solicitacao.getStatus()) {
+            solicitacao.atualizarStatus(dados.novoStatus());
+        }
 
         return new DadosSolicitacaoDTO(solicitacao);
     }
