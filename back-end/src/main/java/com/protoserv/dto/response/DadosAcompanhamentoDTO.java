@@ -14,8 +14,8 @@ public record DadosAcompanhamentoDTO(
     public DadosAcompanhamentoDTO(Acompanhamento acompanhamento) {
         this(
                 acompanhamento.getId(),
-                acompanhamento.getAutor().getNome(),
-                acompanhamento.getAutor().getPerfil().name(),
+                acompanhamento.getAutor() != null ? acompanhamento.getAutor().getNome() : "SISTEMA",
+                acompanhamento.getAutor() != null ? acompanhamento.getAutor().getPerfil().name() : "SISTEMA",
                 acompanhamento.getDescricao(),
                 acompanhamento.getAnexoUrl(),
                 acompanhamento.getDataRegistro()
