@@ -21,4 +21,6 @@ public interface SolicitacaoRepository extends JpaRepository<Solicitacao, Long> 
     );
 
     Page<Solicitacao> findAllByStatus(StatusSolicitacao status, Pageable pageable);
+
+    Page<Solicitacao> findAllByCidadaoId(Long cidadaoId, Pageable paginacao);
 }
