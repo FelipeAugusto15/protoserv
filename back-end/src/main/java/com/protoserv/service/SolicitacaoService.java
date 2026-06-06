@@ -12,6 +12,8 @@ import com.protoserv.model.Usuario;
 import com.protoserv.repository.ServicoRepository;
 import com.protoserv.repository.SolicitacaoRepository;
 import com.protoserv.repository.UsuarioRepository;
+import com.protoserv.specification.SolicitacaoSpecification;
+
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.data.domain.Page;
@@ -21,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -90,15 +93,20 @@ public class SolicitacaoService {
         return new DadosSolicitacaoDTO(solicitacao);
     }
 
-    public Page<DadosListagemSolicitacaoDTO> listarSolicitacoes(StatusSolicitacao status, Pageable paginacao) {
-        
-        Page<Solicitacao> paginaDeSolicitacoes;
+    public Page<DadosListagemSolicitacaoDTO> listarSolicitacoes(
+            StatusSolicitacao status, 
+            Long servicoId,
+            String logradouro,
+            String bairro,
+            String cidade,
+            String estado,
+            LocalDate dataInicial,
+            LocalDate dataFinal,
+            Pageable paginacao) {
 
-        if (status != null) {
-            paginaDeSolicitacoes = solicitacaoRepository.findAllByStatus(status, paginacao);
-        } else {
-            paginaDeSolicitacoes = solicitacaoRepository.findAll(paginacao);
-        }
+        var specification = SolicitacaoSpecification.comFiltros(status, servicoId, logradouro, bairro, cidade, estado, dataInicial, dataFinal);
+
+        var paginaDeSolicitacoes = solicitacaoRepository.findAll(specification, paginacao);
 
         return paginaDeSolicitacoes.map(DadosListagemSolicitacaoDTO::new);
     }

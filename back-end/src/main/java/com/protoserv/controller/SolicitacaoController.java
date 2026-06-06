@@ -1,8 +1,11 @@
 package com.protoserv.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,9 +52,16 @@ public class SolicitacaoController {
     @PreAuthorize("hasAnyAuthority('ATENDENTE', 'ADMIN')")
     public ResponseEntity<Page<DadosListagemSolicitacaoDTO>> listar(
             @RequestParam(required = false) StatusSolicitacao status,
-            @PageableDefault(size = 10, sort = {"dataAbertura, desc"}) Pageable paginacao) {
+            @RequestParam(required = false) Long servicoId,
+            @RequestParam(required = false) String logradouro,
+            @RequestParam(required = false) String bairro,
+            @RequestParam(required = false) String cidade,
+            @RequestParam(required = false) String estado,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
+            @PageableDefault(size = 10, sort = "dataAbertura,desc") Pageable paginacao) {
 
-        var pagina = solicitacaoService.listarSolicitacoes(status, paginacao);
+        var pagina = solicitacaoService.listarSolicitacoes(status, servicoId, logradouro, bairro, cidade, estado, dataInicial, dataFinal, paginacao);
         
         return ResponseEntity.ok(pagina);
     }
