@@ -135,6 +135,20 @@ public class SolicitacaoService {
         return new DadosSolicitacaoDTO(solicitacao);
     }
 
+    public DadosSolicitacaoDTO detalharSolicitacao(Long id) {
+        var solicitacao = buscarSolicitacao(id);
+
+        var usuarioLogado = buscarUsuarioLogado();
+
+        if (usuarioLogado.getPerfil() == Perfil.CIDADAO) {
+            if (!solicitacao.getCidadao().getId().equals(usuarioLogado.getId())) {
+                throw new AccessDeniedException("Você não tem permissão para visualizar os detalhes de uma solicitação de outro cidadão.");
+            }
+        }
+
+        return new DadosSolicitacaoDTO(solicitacao);
+    }
+
     private String gerarProtocoloUnico() {
         String dataHoje = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         String codigoAleatorio = UUID.randomUUID().toString().substring(0, 6).toUpperCase(); 
