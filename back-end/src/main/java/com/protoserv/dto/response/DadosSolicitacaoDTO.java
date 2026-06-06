@@ -2,6 +2,7 @@ package com.protoserv.dto.response;
 
 import com.protoserv.model.Solicitacao;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record DadosSolicitacaoDTO(
         Long id,
@@ -19,7 +20,8 @@ public record DadosSolicitacaoDTO(
         String estado,
         String complemento,
         String anexoUrl,
-        LocalDateTime dataAbertura
+        LocalDateTime dataAbertura,
+        List<DadosAcompanhamentoDTO> historico
 ) {
     public DadosSolicitacaoDTO(Solicitacao solicitacao) {
         this(
@@ -38,7 +40,8 @@ public record DadosSolicitacaoDTO(
             solicitacao.getEndereco().getEstado(),
             solicitacao.getEndereco().getComplemento(),
             solicitacao.getAnexoUrl(),
-            solicitacao.getDataAbertura()
+            solicitacao.getDataAbertura(),
+            solicitacao.getAcompanhamentos() != null ? solicitacao.getAcompanhamentos().stream().map(DadosAcompanhamentoDTO::new).toList() : List.of()
         );
     }
 }
