@@ -126,7 +126,7 @@ public class SolicitacaoService {
             }
         }
 
-        solicitacao.adicionarAcompanhamento(dados.descricao(), usuarioLogado);
+        solicitacao.adicionarAcompanhamento(dados.descricao(), usuarioLogado, dados.anexoUrl());
 
         if (dados.novoStatus() != null && dados.novoStatus() != solicitacao.getStatus()) {
             solicitacao.atualizarStatus(dados.novoStatus(), usuarioLogado);

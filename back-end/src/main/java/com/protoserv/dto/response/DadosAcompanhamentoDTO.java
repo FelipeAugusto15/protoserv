@@ -8,6 +8,7 @@ public record DadosAcompanhamentoDTO(
         String autorNome,
         String autorPerfil,
         String descricao,
+        String anexoUrl,
         LocalDateTime dataRegistro
 ) {
     public DadosAcompanhamentoDTO(Acompanhamento acompanhamento) {
@@ -16,6 +17,7 @@ public record DadosAcompanhamentoDTO(
                 acompanhamento.getAutor().getNome(),
                 acompanhamento.getAutor().getPerfil().name(),
                 acompanhamento.getDescricao(),
+                acompanhamento.getAnexoUrl(),
                 acompanhamento.getDataRegistro()
         );
     }

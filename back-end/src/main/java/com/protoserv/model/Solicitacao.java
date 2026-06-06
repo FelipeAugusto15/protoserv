@@ -77,8 +77,8 @@ public class Solicitacao {
         this.status = StatusSolicitacao.EM_ANDAMENTO;
     }
 
-    public void adicionarAcompanhamento(String descricao, Usuario autor) {
-        Acompanhamento novoAcompanhamento = new Acompanhamento(this, autor, descricao);
+    public void adicionarAcompanhamento(String descricao, Usuario autor, String anexoUrl) {
+        Acompanhamento novoAcompanhamento = new Acompanhamento(this, autor, descricao, anexoUrl);
         this.acompanhamentos.add(novoAcompanhamento);
     }
 

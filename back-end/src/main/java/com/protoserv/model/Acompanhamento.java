@@ -29,12 +29,15 @@ public class Acompanhamento {
     @Column(columnDefinition = "TEXT")
     private String descricao;
 
+    private String anexoUrl;
+
     private LocalDateTime dataRegistro;
 
-    public Acompanhamento(Solicitacao solicitacao, Usuario autor, String descricao) {
+    public Acompanhamento(Solicitacao solicitacao, Usuario autor, String descricao , String anexoUrl) {
         this.solicitacao = solicitacao;
         this.autor = autor;
         this.descricao = descricao;
+        this.anexoUrl = anexoUrl;
         this.dataRegistro = LocalDateTime.now();
     }
 }
