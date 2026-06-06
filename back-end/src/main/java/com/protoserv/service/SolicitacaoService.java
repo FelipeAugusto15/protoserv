@@ -129,7 +129,13 @@ public class SolicitacaoService {
         solicitacao.adicionarAcompanhamento(dados.descricao(), usuarioLogado, dados.anexoUrl());
 
         if (dados.novoStatus() != null && dados.novoStatus() != solicitacao.getStatus()) {
-            solicitacao.atualizarStatus(dados.novoStatus(), usuarioLogado);
+            var statusAnterior = solicitacao.getStatus(); 
+            
+            solicitacao.atualizarStatus(dados.novoStatus(), usuarioLogado); 
+            
+            solicitacao.adicionarAcompanhamentoSistema(
+                String.format("O status da solicitação foi alterado de %s para %s.", statusAnterior, dados.novoStatus())
+            );
         }
 
         return new DadosSolicitacaoDTO(solicitacao);

@@ -82,6 +82,10 @@ public class Solicitacao {
         this.acompanhamentos.add(novoAcompanhamento);
     }
 
+    public void adicionarAcompanhamentoSistema(String descricao) {
+        Acompanhamento novoAcompanhamento = new Acompanhamento(this, null, descricao, null);
+        this.acompanhamentos.add(novoAcompanhamento);
+    }
 
     public void atualizarStatus(StatusSolicitacao novoStatus, Usuario executor) {
         if (executor.getPerfil() == Perfil.CIDADAO) {
