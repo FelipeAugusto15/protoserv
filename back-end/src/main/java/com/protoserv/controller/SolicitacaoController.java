@@ -20,6 +20,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.protoserv.dto.request.DadosAberturaSolicitacaoDTO;
 import com.protoserv.dto.request.DadosNovoAcompanhamentoDTO;
+import com.protoserv.dto.request.DadosReclassificacaoSolicitacaoDTO;
 import com.protoserv.dto.response.DadosListagemSolicitacaoDTO;
 import com.protoserv.dto.response.DadosSolicitacaoDTO;
 import com.protoserv.model.StatusSolicitacao;
@@ -99,5 +100,15 @@ public class SolicitacaoController {
         var pagina = solicitacaoService.listarMinhasSolicitacoes(paginacao);
 
         return ResponseEntity.ok(pagina);
+    }
+
+    @PatchMapping("/{id}/classificacao")
+    @PreAuthorize("hasAnyAuthority('ATENDENTE')")
+    public ResponseEntity<DadosSolicitacaoDTO> reclassificar(
+            @PathVariable Long id,
+            @RequestBody DadosReclassificacaoSolicitacaoDTO dados) {
+        
+        var solicitacaoAtualizada = solicitacaoService.reclassificar(id, dados);
+        return ResponseEntity.ok(solicitacaoAtualizada);
     }
 }
