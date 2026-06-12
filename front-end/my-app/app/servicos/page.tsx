@@ -22,7 +22,6 @@ export default function Servicos() {
 
   const [stats] = useState<Estatisticas | null>(null);
 
-  // 🔥 SERVIÇOS FIXOS (ATALHOS VISUAIS)
   const servicos: Servico[] = [
     { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas", icone: "💡" },
     { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta", icone: "🗑️" },
@@ -42,7 +41,6 @@ export default function Servicos() {
 
       <div className="flex-1 flex flex-col bg-gray-100">
 
-        {/* HEADER */}
         <header className="bg-white px-8 py-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">
             Solicitar Serviço
@@ -51,7 +49,6 @@ export default function Servicos() {
 
         <div className="flex-1 p-8 overflow-auto">
 
-          {/* LISTA DE SERVIÇOS */}
           {!servicoSelecionado && (
             <>
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
@@ -62,27 +59,6 @@ export default function Servicos() {
                 Selecione rapidamente o serviço desejado para abrir um protocolo.
               </p>
 
-              {/* STATS FUTURO */}
-              {stats && (
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="bg-white p-4 rounded-xl shadow-sm text-center">
-                    <p className="text-lg font-bold text-blue-600">{stats.total}</p>
-                    <p className="text-sm text-gray-600">Solicitações</p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl shadow-sm text-center">
-                    <p className="text-lg font-bold text-green-600">{stats.resolvidas}%</p>
-                    <p className="text-sm text-gray-600">Resolvidas</p>
-                  </div>
-
-                  <div className="bg-white p-4 rounded-xl shadow-sm text-center">
-                    <p className="text-lg font-bold text-yellow-600">{stats.tempoMedio}</p>
-                    <p className="text-sm text-gray-600">Tempo médio</p>
-                  </div>
-                </div>
-              )}
-
-              {/* BUSCA */}
               <input
                 type="text"
                 placeholder="Buscar serviço..."
@@ -91,7 +67,6 @@ export default function Servicos() {
                 className="w-full mb-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
-              {/* CARDS */}
               <div className="grid grid-cols-3 gap-5">
                 {servicosFiltrados.map((servico) => (
                   <div
@@ -117,11 +92,9 @@ export default function Servicos() {
             </>
           )}
 
-          {/* FORMULÁRIO */}
           {servicoSelecionado && (
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
 
-              {/* VOLTAR */}
               <button
                 onClick={() => setServicoSelecionado(null)}
                 className="text-sm text-blue-600 mb-4 hover:underline"
@@ -129,7 +102,6 @@ export default function Servicos() {
                 ← Voltar
               </button>
 
-              {/* SERVIÇO SELECIONADO */}
               <h3 className="text-2xl font-bold text-gray-900 mb-2">
                 {servicoSelecionado.nome}
               </h3>
@@ -138,29 +110,28 @@ export default function Servicos() {
                 {servicoSelecionado.descricao}
               </p>
 
-              {/* FORMULÁRIO (PRONTO PARA BACKEND) */}
               <form
                 className="flex flex-col gap-4"
                 onSubmit={(e) => {
                   e.preventDefault();
 
-                  const form = e.target as HTMLFormElement;
+                  const form = e.currentTarget;
 
                   const payload = {
                     servicoId: servicoSelecionado.id,
                     servico: servicoSelecionado.nome,
-                    nome: (form.nome as HTMLInputElement).value,
-                    email: (form.email as HTMLInputElement).value,
-                    telefone: (form.telefone as HTMLInputElement).value,
-                    endereco: (form.endereco as HTMLInputElement).value,
-                    titulo: (form.titulo as HTMLInputElement).value,
-                    descricao: (form.descricao as HTMLTextAreaElement).value,
+                    nome: (form.elements.namedItem("nome") as HTMLInputElement).value,
+                    email: (form.elements.namedItem("email") as HTMLInputElement).value,
+                    telefone: (form.elements.namedItem("telefone") as HTMLInputElement).value,
+                    endereco: (form.elements.namedItem("endereco") as HTMLInputElement).value,
+                    titulo: (form.elements.namedItem("titulo") as HTMLInputElement).value,
+                    descricao: (form.elements.namedItem("descricao") as HTMLTextAreaElement).value,
                   };
 
                   console.log("ENVIAR PARA BACKEND:", payload);
 
-                  // 🔥 FUTURO: POST /solicitacoes
-                  alert("Solicitação enviada com sucesso! (backend pendente)");
+                  // FUTURO: POST /solicitacoes
+                  alert("Solicitação enviada!");
                 }}
               >
                 <h4 className="font-semibold text-gray-900 mt-2">

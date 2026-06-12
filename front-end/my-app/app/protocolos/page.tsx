@@ -26,7 +26,7 @@ export default function Protocolos() {
     }, 1500);
   }, []);
 
-  // ✅ CORES DOS STATUS
+  //  CORES DOS STATUS
   function getStatusStyle(status: Status): string {
     switch (status) {
       case "Em andamento":

@@ -9,11 +9,16 @@ import { useRouter } from "next/navigation";
 export default function Home() {
   const [suporte, setSuporte] = useState(false);
   const [servicos, setServicos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [offline, setOffline] = useState(false);
 
   const router = useRouter();
 
   useEffect(() => {
     const fetchServicos = async () => {
+      setLoading(true);
+      setOffline(false);
+
       try {
         const token = localStorage.getItem("token");
 
@@ -21,20 +26,25 @@ export default function Home() {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
         });
 
         if (!response.ok) {
-          console.error("Erro ao buscar serviços");
+          console.error("Erro ao buscar serviços:", response.status);
+          setServicos([]);
+          setOffline(true);
           return;
         }
 
         const data = await response.json();
-        setServicos(data.content || data); // suporta Page ou lista simples
-
-        console.log("SERVIÇOS:", data);
+        setServicos(data.content || data || []);
       } catch (error) {
         console.error("Erro na requisição:", error);
+        setServicos([]);
+        setOffline(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -46,6 +56,8 @@ export default function Home() {
       <Sidebar />
 
       <div className="flex-1 flex flex-col bg-gray-100">
+
+        {/* HEADER */}
         <header className="bg-white px-8 py-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-800">
             Painel de Serviços
@@ -53,7 +65,9 @@ export default function Home() {
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-center p-8">
+
           <div className="w-full max-w-5xl">
+
             <h2 className="text-2xl font-semibold text-gray-800 mb-2">
               O que você deseja fazer?
             </h2>
@@ -62,7 +76,16 @@ export default function Home() {
               Escolha uma das opções abaixo para continuar
             </p>
 
+            {/* ALERTA BACKEND OFFLINE */}
+            {offline && (
+              <div className="bg-red-100 text-red-700 p-3 rounded mb-6">
+                ⚠ Backend fora do ar. Alguns dados podem não carregar.
+              </div>
+            )}
+
+            {/* CARDS PRINCIPAIS */}
             <div className="grid grid-cols-3 gap-6">
+
               <div
                 onClick={() => router.push("/servicos")}
                 className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg hover:scale-105 transition cursor-pointer"
@@ -79,9 +102,11 @@ export default function Home() {
                 onClick={() => router.push("/protocolos")}
                 className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg hover:scale-105 transition cursor-pointer"
               >
-                <h3 className="text-lg font-bold mb-2">Acompanhar</h3>
+                <h3 className="text-lg font-bold mb-2">
+                  Acompanhar Protocolo
+                </h3>
                 <p className="text-sm opacity-90">
-                  Ver andamento do seu protocolo
+                  Ver andamento do seu atendimento
                 </p>
               </div>
 
@@ -89,22 +114,35 @@ export default function Home() {
                 onClick={() => setSuporte(!suporte)}
                 className="bg-gradient-to-br from-blue-500 to-blue-700 text-white p-6 rounded-xl shadow-lg hover:scale-105 transition cursor-pointer"
               >
-                <h3 className="text-lg font-bold mb-2">Suporte</h3>
-                <p className="text-gray-200 text-sm">
+                <h3 className="text-lg font-bold mb-2">
+                  Suporte
+                </h3>
+                <p className="text-sm opacity-90">
                   Solicitar ajuda ou atendimento
                 </p>
               </div>
+
             </div>
 
-            {/* DEBUG DOS SERVIÇOS */}
+            {/* SERVIÇOS DEBUG / PAINEL */}
             <div className="mt-10">
+
               <h2 className="text-lg font-bold text-gray-800 mb-2">
                 Serviços carregados:
               </h2>
 
               <div className="bg-white p-4 rounded-lg shadow">
-                {servicos.length === 0 ? (
-                  <p className="text-gray-500">Nenhum serviço encontrado</p>
+
+                {loading ? (
+                  <p className="text-gray-500 animate-pulse">
+                    Carregando serviços...
+                  </p>
+
+                ) : servicos.length === 0 ? (
+                  <p className="text-gray-500">
+                    Nenhum serviço encontrado
+                  </p>
+
                 ) : (
                   servicos.map((s: any) => (
                     <div key={s.id} className="border-b py-2">
@@ -112,14 +150,17 @@ export default function Home() {
                     </div>
                   ))
                 )}
+
               </div>
             </div>
 
+            {/* BOT SUPORTE */}
             {suporte && (
               <div className="mt-8">
                 <Bot />
               </div>
             )}
+
           </div>
         </div>
 

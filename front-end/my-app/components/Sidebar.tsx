@@ -6,19 +6,26 @@ import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home", icon: "📊" },
-  { href: "/servicos", label: "Serviços", icon: "⚙️", badge: "" },
+  { href: "/servicos", label: "Serviços", icon: "⚙️" },
   { href: "/protocolos", label: "Protocolos", icon: "📋" },
   { href: "/perfil", label: "Perfil", icon: "👤" },
 ];
+
+type Usuario = {
+  nome: string;
+  perfil: string;
+};
 
 export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [usuario, setUsuario] = useState({
-    nome: "Carregando...",
-    perfil: "..."
+  const [usuario, setUsuario] = useState<Usuario>({
+    nome: "Offline",
+    perfil: "Sem conexão"
   });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -38,7 +45,10 @@ export default function Sidebar() {
         });
 
         if (!response.ok) {
-          router.push("/login");
+          // só redireciona se for 401 (token inválido)
+          if (response.status === 401) {
+            router.push("/login");
+          }
           return;
         }
 
@@ -50,7 +60,15 @@ export default function Sidebar() {
         });
 
       } catch (err) {
-        console.error("Erro ao carregar usuário:", err);
+        // 🔥 aqui entra quando backend está OFF
+        console.warn("Backend offline ou indisponível");
+
+        setUsuario({
+          nome: "Offline",
+          perfil: "Servidor indisponível"
+        });
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -63,21 +81,19 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="relative w-64 flex flex-col p-7 overflow-hidden"
+    <aside className="w-64 flex flex-col p-7 min-h-screen"
       style={{
         background: "linear-gradient(160deg, #13131f 0%, #0d0d1a 100%)",
         borderRight: "1px solid rgba(255,255,255,0.07)",
-        minHeight: "100vh",
       }}
     >
 
-      {/* NAV */}
-      <p className="text-[10px] font-medium tracking-[1.5px] uppercase text-white/25 px-2 mb-2">
+      <p className="text-[10px] font-medium tracking-[1.5px] uppercase text-white/25 mb-2">
         Menu
       </p>
 
       <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map(({ href, label, icon, badge }) => {
+        {NAV_ITEMS.map(({ href, label, icon }) => {
           const isActive = pathname === href;
 
           return (
@@ -99,28 +115,24 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* USER INFO DINÂMICO */}
       <div className="mt-auto pt-5 border-t border-white/10">
-
         <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
           <div>
             <p className="text-white text-sm font-medium">
-              {usuario.nome}
+              {loading ? "Carregando..." : usuario.nome}
             </p>
             <p className="text-white/40 text-xs">
-              {usuario.perfil}
+              {loading ? "" : usuario.perfil}
             </p>
           </div>
         </div>
 
-        {/* LOGOUT */}
         <button
           onClick={logout}
           className="w-full mt-3 py-2 rounded-xl text-sm bg-red-500/10 text-red-400 border border-red-500/20"
         >
           ⎋ Sair da conta
         </button>
-
       </div>
     </aside>
   );
