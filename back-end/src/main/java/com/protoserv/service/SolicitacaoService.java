@@ -7,6 +7,7 @@ import com.protoserv.dto.response.DadosListagemSolicitacaoDTO;
 import com.protoserv.dto.response.DadosSolicitacaoDTO;
 import com.protoserv.model.Endereco;
 import com.protoserv.model.Perfil;
+import com.protoserv.model.Servico;
 import com.protoserv.model.Solicitacao;
 import com.protoserv.model.StatusSolicitacao;
 import com.protoserv.model.Usuario;
@@ -48,8 +49,7 @@ public class SolicitacaoService {
     @Transactional
     public DadosSolicitacaoDTO abrirSolicitacao(DadosAberturaSolicitacaoDTO dados) {
         
-        var servico = servicoRepository.findById(dados.servicoId())
-                .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado no catálogo."));
+        var servico = buscarServico(dados.servicoId());
 
         var cidadao = buscarUsuarioLogado();
 
@@ -179,8 +179,7 @@ public class SolicitacaoService {
         StringBuilder mudancas = new StringBuilder("SISTEMA: Reclassificação do chamado. ");
 
         if (dados.servicoId() != null && !dados.servicoId().equals(solicitacao.getServico().getId())) {
-            var novoServico = servicoRepository.findById(dados.servicoId())
-                    .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado."));
+            var novoServico = buscarServico(dados.servicoId());
             
             mudancas.append(String.format("Serviço alterado de '%s' para '%s'. ", solicitacao.getServico().getNome(), novoServico.getNome()));
             solicitacao.reclassificar(novoServico, null);
@@ -213,6 +212,11 @@ public class SolicitacaoService {
         String emailUsuarioLogado = capturarEmailUsuarioLogado();
         return usuarioRepository.findByEmail(emailUsuarioLogado)
                 .orElseThrow(() -> new EntityNotFoundException("Usuário logado não encontrado no banco de dados."));
+    }
+
+    private Servico buscarServico(Long id) {
+        return servicoRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Serviço não encontrado no catálogo."));
     }
 
     private Solicitacao buscarSolicitacao(Long id) {
