@@ -109,6 +109,16 @@ public class SolicitacaoController {
             @RequestBody DadosReclassificacaoSolicitacaoDTO dados) {
         
         var solicitacaoAtualizada = solicitacaoService.reclassificar(id, dados);
+        
         return ResponseEntity.ok(solicitacaoAtualizada);
+    }
+
+    @PatchMapping("/{id}/cancelar")
+    @PreAuthorize("hasAuthority('CIDADAO')")
+    public ResponseEntity<DadosSolicitacaoDTO> cancelar(@PathVariable Long id) {
+        
+        var solicitacaoCancelada = solicitacaoService.cancelarSolicitacao(id);
+        
+        return ResponseEntity.ok(solicitacaoCancelada);
     }
 }
