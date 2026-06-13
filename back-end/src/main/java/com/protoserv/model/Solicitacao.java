@@ -134,4 +134,19 @@ public class Solicitacao {
         
         this.adicionarAcompanhamentoSistema("SISTEMA: Solicitação cancelada pelo cidadão.");
     }
+
+    public void reabrir() {
+        if (this.status != StatusSolicitacao.CONCLUIDA) {
+            throw new IllegalStateException("Apenas solicitações com status CONCLUIDA podem ser reabertas.");
+        }
+
+        if (this.dataConclusao != null && this.dataConclusao.plusDays(3).isBefore(LocalDateTime.now())) {
+            throw new IllegalStateException("O prazo de 3 dias para reabertura desta solicitação já expirou.");
+        }
+        
+        this.atualizarStatus(StatusSolicitacao.EM_ANDAMENTO, null);
+        this.dataConclusao = null; 
+        
+        this.adicionarAcompanhamentoSistema("Solicitação reaberta pelo cidadão (Contestação).");
+    }
 }
