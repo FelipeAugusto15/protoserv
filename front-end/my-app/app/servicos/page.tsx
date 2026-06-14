@@ -1,7 +1,7 @@
 "use client";
 
 import Sidebar from "@/components/Sidebar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Servico = {
   id: number;
@@ -10,30 +10,138 @@ type Servico = {
   icone: string;
 };
 
-type Estatisticas = {
-  total: number;
-  resolvidas: number;
-  tempoMedio: string;
-};
+const servicosFixos: Servico[] = [
+  { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas", icone: "💡" },
+  { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta", icone: "🗑️" },
+  { id: 3, nome: "Infraestrutura", descricao: "Buracos, ruas e calçadas", icone: "🚧" },
+  { id: 4, nome: "Limpeza Urbana", descricao: "Entulhos e terrenos sujos", icone: "🧹" },
+  { id: 5, nome: "Vazamento de Água", descricao: "Problemas na rede", icone: "💧" },
+  { id: 6, nome: "Outros", descricao: "Outras solicitações", icone: "📌" },
+];
 
 export default function Servicos() {
+  const [servicos, setServicos] = useState<Servico[]>(servicosFixos);
   const [servicoSelecionado, setServicoSelecionado] = useState<Servico | null>(null);
   const [busca, setBusca] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [enviando, setEnviando] = useState(false);
 
-  const [stats] = useState<Estatisticas | null>(null);
+  useEffect(() => {
+    carregarServicos();
+  }, []);
 
-  const servicos: Servico[] = [
-    { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas", icone: "💡" },
-    { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta", icone: "🗑️" },
-    { id: 3, nome: "Infraestrutura", descricao: "Buracos, ruas e calçadas", icone: "🚧" },
-    { id: 4, nome: "Limpeza Urbana", descricao: "Entulhos e terrenos sujos", icone: "🧹" },
-    { id: 5, nome: "Vazamento de Água", descricao: "Problemas na rede", icone: "💧" },
-    { id: 6, nome: "Outros", descricao: "Outras solicitações", icone: "📌" },
-  ];
+  async function carregarServicos() {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:8080/servicos", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) throw new Error("Erro ao buscar serviços");
+
+      const data = await res.json();
+
+      const lista = Array.isArray(data) ? data : data.content ?? [];
+
+      if (lista.length > 0) {
+        setServicos(lista);
+      }
+    } catch (err) {
+      console.error("Erro ao carregar serviços:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   const servicosFiltrados = servicos.filter((s) =>
     s.nome.toLowerCase().includes(busca.toLowerCase())
   );
+
+  async function abrirSolicitacao(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+
+    if (!servicoSelecionado) return;
+
+    setEnviando(true);
+
+    const token = localStorage.getItem("token");
+
+    console.log("TOKEN:", token);
+
+    if (!token || token.split(".").length !== 3) {
+      alert("Token inválido ou expirado");
+      setEnviando(false);
+      return;
+    }
+
+    const form = e.currentTarget;
+
+    const descricao = (form.elements.namedItem("descricao") as HTMLTextAreaElement).value;
+    const cep = (form.elements.namedItem("cep") as HTMLInputElement).value;
+    const logradouro = (form.elements.namedItem("logradouro") as HTMLInputElement).value;
+    const numero = (form.elements.namedItem("numero") as HTMLInputElement).value;
+    const bairro = (form.elements.namedItem("bairro") as HTMLInputElement).value;
+    const cidade = (form.elements.namedItem("cidade") as HTMLInputElement).value;
+    const estado = (form.elements.namedItem("estado") as HTMLInputElement).value;
+
+    if (!descricao || !cep || !logradouro || !numero || !bairro || !cidade || !estado) {
+      alert("Preencha todos os campos obrigatórios");
+      setEnviando(false);
+      return;
+    }
+
+    const payload = {
+      servicoId: servicoSelecionado.id,
+      descricao,
+      cep,
+      logradouro,
+      numero,
+      bairro,
+      cidade,
+      estado,
+      complemento:
+        (form.elements.namedItem("complemento") as HTMLInputElement).value || "",
+      anexoUrl:
+        (form.elements.namedItem("anexoUrl") as HTMLInputElement).value || ""
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/solicitacoes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const text = await res.text();
+
+      if (!res.ok) {
+        console.log("STATUS:", res.status);
+        console.log("ERROR BODY:", text);
+        alert(`Erro ao enviar solicitação (${res.status})`);
+        setEnviando(false);
+        return;
+      }
+
+      const data = JSON.parse(text);
+
+      alert("Solicitação criada! Protocolo: " + data.protocolo);
+
+      form.reset();
+      setServicoSelecionado(null);
+
+    } catch (err) {
+      console.error(err);
+      alert("Erro de conexão com servidor");
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   return (
     <main className="flex h-screen bg-gray-900">
@@ -41,121 +149,82 @@ export default function Servicos() {
 
       <div className="flex-1 flex flex-col bg-gray-100">
 
-        <header className="bg-white px-8 py-4 border-b border-gray-200">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Solicitar Serviço
-          </h1>
+        <header className="bg-white px-8 py-4 border-b">
+          <h1 className="text-2xl font-bold">Solicitar Serviço</h1>
         </header>
 
         <div className="flex-1 p-8 overflow-auto">
 
           {!servicoSelecionado && (
             <>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                Escolha o tipo de serviço
-              </h2>
-
-              <p className="text-gray-700 mb-6">
-                Selecione rapidamente o serviço desejado para abrir um protocolo.
-              </p>
+              <h2 className="text-xl font-bold mb-2">Escolha um serviço</h2>
 
               <input
-                type="text"
+                className="w-full p-3 border rounded mb-6"
                 placeholder="Buscar serviço..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="w-full mb-6 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
               />
 
-              <div className="grid grid-cols-3 gap-5">
-                {servicosFiltrados.map((servico) => (
-                  <div
-                    key={servico.id}
-                    onClick={() => setServicoSelecionado(servico)}
-                    className="bg-white border border-gray-200 rounded-2xl p-5 flex items-center gap-4 cursor-pointer transition-all hover:shadow-md hover:border-blue-400"
-                  >
-                    <div className="w-12 h-12 flex items-center justify-center rounded-full bg-blue-100 text-xl">
-                      {servico.icone}
+              {loading ? (
+                <p>Carregando...</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-5">
+                  {servicosFiltrados.map((s) => (
+                    <div
+                      key={s.id}
+                      onClick={() => setServicoSelecionado(s)}
+                      className="bg-white p-5 rounded-xl border cursor-pointer hover:border-blue-500"
+                    >
+                      <div className="text-2xl">{s.icone}</div>
+                      <h3 className="font-bold">{s.nome}</h3>
+                      <p className="text-sm text-gray-600">{s.descricao}</p>
                     </div>
+                  ))}
+                </div>
+              )}
 
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {servico.nome}
-                      </h3>
-                      <p className="text-sm text-gray-700">
-                        {servico.descricao}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {!loading && servicosFiltrados.length === 0 && (
+                <p className="mt-4 text-gray-500">Nenhum serviço encontrado</p>
+              )}
             </>
           )}
 
           {servicoSelecionado && (
-            <div className="max-w-2xl mx-auto bg-white p-8 rounded-2xl shadow-lg border border-gray-200">
+            <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow">
 
               <button
                 onClick={() => setServicoSelecionado(null)}
-                className="text-sm text-blue-600 mb-4 hover:underline"
+                className="text-blue-600 mb-4"
               >
                 ← Voltar
               </button>
 
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold mb-4">
                 {servicoSelecionado.nome}
-              </h3>
+              </h2>
 
-              <p className="text-gray-700 mb-6">
-                {servicoSelecionado.descricao}
-              </p>
+              <form onSubmit={abrirSolicitacao} className="space-y-3">
 
-              <form
-                className="flex flex-col gap-4"
-                onSubmit={(e) => {
-                  e.preventDefault();
+                <textarea name="descricao" placeholder="Descrição" className="w-full border p-3 rounded" required />
 
-                  const form = e.currentTarget;
+                <input name="cep" placeholder="CEP" className="w-full border p-3 rounded" required />
+                <input name="logradouro" placeholder="Logradouro" className="w-full border p-3 rounded" required />
+                <input name="numero" placeholder="Número" className="w-full border p-3 rounded" required />
+                <input name="bairro" placeholder="Bairro" className="w-full border p-3 rounded" required />
+                <input name="cidade" placeholder="Cidade" className="w-full border p-3 rounded" required />
+                <input name="estado" placeholder="Estado" className="w-full border p-3 rounded" required />
 
-                  const payload = {
-                    servicoId: servicoSelecionado.id,
-                    servico: servicoSelecionado.nome,
-                    nome: (form.elements.namedItem("nome") as HTMLInputElement).value,
-                    email: (form.elements.namedItem("email") as HTMLInputElement).value,
-                    telefone: (form.elements.namedItem("telefone") as HTMLInputElement).value,
-                    endereco: (form.elements.namedItem("endereco") as HTMLInputElement).value,
-                    titulo: (form.elements.namedItem("titulo") as HTMLInputElement).value,
-                    descricao: (form.elements.namedItem("descricao") as HTMLTextAreaElement).value,
-                  };
-
-                  console.log("ENVIAR PARA BACKEND:", payload);
-
-                  // FUTURO: POST /solicitacoes
-                  alert("Solicitação enviada!");
-                }}
-              >
-                <h4 className="font-semibold text-gray-900 mt-2">
-                  Dados do solicitante
-                </h4>
-
-                <input name="nome" type="text" placeholder="Nome completo" className="border p-3 rounded-lg" required />
-                <input name="email" type="email" placeholder="Email para contato" className="border p-3 rounded-lg" />
-                <input name="telefone" type="tel" placeholder="Telefone para contato" className="border p-3 rounded-lg" required />
-                <input name="endereco" type="text" placeholder="Endereço do problema" className="border p-3 rounded-lg" required />
-
-                <h4 className="font-semibold text-gray-900 mt-4">
-                  Detalhes da solicitação
-                </h4>
-
-                <input name="titulo" type="text" placeholder="Título do problema" className="border p-3 rounded-lg" required />
-                <textarea name="descricao" placeholder="Descreva o problema..." className="border p-3 rounded-lg h-28" required />
+                <input name="complemento" placeholder="Complemento" className="w-full border p-3 rounded" />
+                <input name="anexoUrl" placeholder="Link de anexo (opcional)" className="w-full border p-3 rounded" />
 
                 <button
-                  type="submit"
-                  className="bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold mt-2"
+                  disabled={enviando}
+                  className="bg-blue-600 text-white px-4 py-2 rounded"
                 >
-                  Enviar Solicitação
+                  {enviando ? "Enviando..." : "Abrir Solicitação"}
                 </button>
+
               </form>
             </div>
           )}

@@ -3,38 +3,63 @@
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useState } from "react";
 
-//  Tipos prontos
-type Status = "Em andamento" | "Concluído" | "Pendente";
-
 type Protocolo = {
-  id: string;
-  servico: string;
-  data: string;
-  status: Status;
+  id: number;
+  protocolo: string;
+  servicoNome: string;
+  status: string;
+  dataAbertura: string;
 };
 
 export default function Protocolos() {
-
   const [protocolos, setProtocolos] = useState<Protocolo[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTimeout(() => {
-      //  Pode testar com dados depois
-      setProtocolos([]);
-      setLoading(false);
-    }, 1500);
+    carregarProtocolos();
   }, []);
 
-  //  CORES DOS STATUS
-  function getStatusStyle(status: Status): string {
+  async function carregarProtocolos() {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "http://localhost:8080/solicitacoes/minhas",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Erro ao buscar protocolos");
+      }
+
+      const data = await response.json();
+
+      setProtocolos(data.content || []);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function getStatusStyle(status: string) {
     switch (status) {
-      case "Em andamento":
-        return "bg-yellow-100 text-yellow-700";
-      case "Concluído":
-        return "bg-green-100 text-green-700";
-      case "Pendente":
+      case "NOVO":
         return "bg-red-100 text-red-700";
+
+      case "EM_ANDAMENTO":
+        return "bg-yellow-100 text-yellow-700";
+
+      case "CONCLUIDA":
+        return "bg-green-100 text-green-700";
+
+      case "CANCELADA":
+        return "bg-gray-100 text-gray-700";
+
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -42,81 +67,65 @@ export default function Protocolos() {
 
   return (
     <main className="flex h-screen bg-gray-900">
-      
       <Sidebar />
 
       <div className="flex-1 flex flex-col bg-gray-100">
-        
-        {/* HEADER */}
         <header className="bg-white px-8 py-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-gray-900">
             Meus Protocolos
           </h1>
         </header>
 
-        {/* CONTEÚDO */}
-        <div className="flex-1 flex items-center justify-center p-8">
-          
+        <div className="flex-1 p-8 overflow-auto">
           {loading ? (
-            <p className="text-gray-600 animate-pulse">
+            <p className="text-center text-gray-600">
               Carregando protocolos...
             </p>
-
           ) : protocolos.length === 0 ? (
-            
-            <div className="text-center max-w-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            <div className="bg-white p-10 rounded-xl shadow text-center">
+              <h2 className="text-xl font-semibold text-gray-700 mb-2">
                 Nenhum protocolo encontrado
               </h2>
 
-              <p className="text-gray-600 mb-6">
-                Você ainda não realizou nenhuma solicitação de serviço.
+              <p className="text-gray-500">
+                Você ainda não realizou nenhuma solicitação.
               </p>
-
-              <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">
-                Solicitar Serviço
-              </button>
             </div>
-
           ) : (
-            
-            <div className="flex flex-col gap-4 w-full max-w-4xl">
-              
+            <div className="flex flex-col gap-4">
               {protocolos.map((item) => (
                 <div
                   key={item.id}
                   className="bg-white p-5 rounded-xl shadow flex justify-between items-center"
                 >
-                  
-                  {/* INFO */}
                   <div>
                     <h2 className="font-bold text-gray-800">
-                      Protocolo #{item.id}
+                      {item.protocolo}
                     </h2>
-                    <p className="text-gray-600 text-sm">
-                      {item.servico}
+
+                    <p className="text-gray-600">
+                      {item.servicoNome}
                     </p>
-                    <p className="text-gray-400 text-xs mt-1">
-                      {item.data}
+
+                    <p className="text-sm text-gray-400">
+                      {new Date(
+                        item.dataAbertura
+                      ).toLocaleDateString("pt-BR")}
                     </p>
                   </div>
 
-                  {/* STATUS COLORIDO */}
                   <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusStyle(item.status)}`}
+                    className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusStyle(
+                      item.status
+                    )}`}
                   >
                     {item.status}
                   </span>
-
                 </div>
               ))}
-
             </div>
-
           )}
-
         </div>
-
       </div>
     </main>
   );

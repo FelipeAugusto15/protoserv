@@ -2,57 +2,57 @@
 
 import Sidebar from "@/components/Sidebar";
 import Footer from "@/components/Footer";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-type Status = "Pendente" | "Em andamento" | "Concluído";
+type Usuario = {
+  id: number;
+  nome: string;
+  email: string;
+  perfil: string;
+  status: string;
+};
 
-type Protocolo = {
-  id: string;
-  solicitante: string;
-  servico: string;
-  data: string;
-  status: Status;
+type Servico = {
+  id: number;
+  nome: string;
+  descricao: string;
 };
 
 export default function DashboardAdmin() {
-  const [busca, setBusca] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("Todos");
+  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [servicos, setServicos] = useState<Servico[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const [protocolos, setProtocolos] = useState<Protocolo[]>([]);
+  useEffect(() => {
+    carregarDados();
+  }, []);
 
-  const alterarStatus = (id: string, novoStatus: Status) => {
-    setProtocolos((prev) =>
-      prev.map((p) =>
-        p.id === id ? { ...p, status: novoStatus } : p
-      )
-    );
-  };
+  async function carregarDados() {
+    try {
+      const token = localStorage.getItem("token");
 
-  const protocolosFiltrados = useMemo(() => {
-    return protocolos.filter((p) => {
-      const matchBusca =
-        p.id.includes(busca) ||
-        p.servico.toLowerCase().includes(busca.toLowerCase()) ||
-        p.solicitante.toLowerCase().includes(busca.toLowerCase());
+      const [usuariosRes, servicosRes] = await Promise.all([
+        fetch("http://localhost:8080/usuarios", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+        fetch("http://localhost:8080/servicos", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }),
+      ]);
 
-      const matchStatus =
-        filtroStatus === "Todos" ||
-        p.status === filtroStatus;
+      const usuariosData = await usuariosRes.json();
+      const servicosData = await servicosRes.json();
 
-      return matchBusca && matchStatus;
-    });
-  }, [protocolos, busca, filtroStatus]);
-
-  function getStatusStyle(status: Status) {
-    switch (status) {
-      case "Pendente":
-        return "bg-red-100 text-red-700";
-      case "Em andamento":
-        return "bg-yellow-100 text-yellow-700";
-      case "Concluído":
-        return "bg-green-100 text-green-700";
-      default:
-        return "bg-gray-100 text-gray-700";
+      setUsuarios(usuariosData.content || []);
+      setServicos(servicosData.content || []);
+    } catch (error) {
+      console.error("Erro ao carregar dados", error);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -70,159 +70,113 @@ export default function DashboardAdmin() {
 
         <div className="flex-1 p-8 overflow-auto">
 
-          {/* CARDS */}
-          <div className="grid grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-3 gap-6 mb-8">
 
             <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="text-gray-500">Total</h3>
+              <h3 className="text-gray-500">Usuários</h3>
               <p className="text-3xl font-bold text-blue-600">
-                {protocolos.length}
+                {usuarios.length}
               </p>
             </div>
 
             <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="text-gray-500">Pendentes</h3>
-              <p className="text-3xl font-bold text-red-600">
-                {protocolos.filter((p) => p.status === "Pendente").length}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="text-gray-500">Em andamento</h3>
-              <p className="text-3xl font-bold text-yellow-600">
-                {protocolos.filter((p) => p.status === "Em andamento").length}
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow p-6">
-              <h3 className="text-gray-500">Concluídos</h3>
+              <h3 className="text-gray-500">Serviços</h3>
               <p className="text-3xl font-bold text-green-600">
-                {protocolos.filter((p) => p.status === "Concluído").length}
+                {servicos.length}
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl shadow p-6">
+              <h3 className="text-gray-500">Sistema</h3>
+              <p className="text-xl font-bold text-gray-700">
+                Online
               </p>
             </div>
 
           </div>
 
-          {/* FILTROS */}
-          <div className="bg-white rounded-xl shadow p-6 mb-6">
+          <div className="bg-white rounded-xl shadow overflow-hidden mb-8">
 
-            <div className="flex gap-4">
-
-              <input
-                type="text"
-                placeholder="Buscar protocolo, serviço ou cidadão..."
-                value={busca}
-                onChange={(e) => setBusca(e.target.value)}
-                className="flex-1 border border-gray-300 rounded-lg px-4 py-2"
-              />
-
-              <select
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
-                className="border border-gray-300 rounded-lg px-4 py-2"
-              >
-                <option>Todos</option>
-                <option>Pendente</option>
-                <option>Em andamento</option>
-                <option>Concluído</option>
-              </select>
-
+            <div className="p-4 border-b">
+              <h2 className="font-bold text-lg">
+                Usuários Cadastrados
+              </h2>
             </div>
 
+            {loading ? (
+              <div className="p-6">
+                Carregando usuários...
+              </div>
+            ) : (
+              <table className="w-full">
+
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="p-4 text-left">ID</th>
+                    <th className="p-4 text-left">Nome</th>
+                    <th className="p-4 text-left">Email</th>
+                    <th className="p-4 text-left">Perfil</th>
+                    <th className="p-4 text-left">Status</th>
+                  </tr>
+                </thead>
+
+                <tbody>
+                  {usuarios.map((usuario) => (
+                    <tr
+                      key={usuario.id}
+                      className="border-t"
+                    >
+                      <td className="p-4">{usuario.id}</td>
+                      <td className="p-4">{usuario.nome}</td>
+                      <td className="p-4">{usuario.email}</td>
+                      <td className="p-4">{usuario.perfil}</td>
+                      <td className="p-4">{usuario.status}</td>
+                    </tr>
+                  ))}
+                </tbody>
+
+              </table>
+            )}
           </div>
 
-          {/* TABELA */}
           <div className="bg-white rounded-xl shadow overflow-hidden">
 
-            <table className="w-full">
+            <div className="p-4 border-b">
+              <h2 className="font-bold text-lg">
+                Serviços Disponíveis
+              </h2>
+            </div>
 
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left p-4">Protocolo</th>
-                  <th className="text-left p-4">Solicitante</th>
-                  <th className="text-left p-4">Serviço</th>
-                  <th className="text-left p-4">Data</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Ações</th>
-                </tr>
-              </thead>
+            {loading ? (
+              <div className="p-6">
+                Carregando serviços...
+              </div>
+            ) : (
+              <table className="w-full">
 
-              <tbody>
-
-                {protocolosFiltrados.length === 0 ? (
+                <thead className="bg-gray-50">
                   <tr>
-                    <td
-                      colSpan={6}
-                      className="text-center p-10 text-gray-500"
-                    >
-                      Nenhuma solicitação encontrada.
-                    </td>
+                    <th className="p-4 text-left">ID</th>
+                    <th className="p-4 text-left">Nome</th>
+                    <th className="p-4 text-left">Descrição</th>
                   </tr>
-                ) : (
-                  protocolosFiltrados.map((item) => (
+                </thead>
+
+                <tbody>
+                  {servicos.map((servico) => (
                     <tr
-                      key={item.id}
-                      className="border-t hover:bg-gray-50"
+                      key={servico.id}
+                      className="border-t"
                     >
-                      <td className="p-4 font-semibold">
-                        #{item.id}
-                      </td>
-
-                      <td className="p-4">
-                        {item.solicitante}
-                      </td>
-
-                      <td className="p-4">
-                        {item.servico}
-                      </td>
-
-                      <td className="p-4">
-                        {item.data}
-                      </td>
-
-                      <td className="p-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(item.status)}`}
-                        >
-                          {item.status}
-                        </span>
-                      </td>
-
-                      <td className="p-4">
-
-                        <div className="flex gap-2">
-
-                          <select
-                            value={item.status}
-                            onChange={(e) =>
-                              alterarStatus(
-                                item.id,
-                                e.target.value as Status
-                              )
-                            }
-                            className="border border-gray-300 rounded px-3 py-1"
-                          >
-                            <option>Pendente</option>
-                            <option>Em andamento</option>
-                            <option>Concluído</option>
-                          </select>
-
-                          <button className="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-                            Salvar
-                          </button>
-
-                        </div>
-
-                      </td>
-
+                      <td className="p-4">{servico.id}</td>
+                      <td className="p-4">{servico.nome}</td>
+                      <td className="p-4">{servico.descricao}</td>
                     </tr>
-                  ))
-                )}
+                  ))}
+                </tbody>
 
-              </tbody>
-
-            </table>
-
+              </table>
+            )}
           </div>
 
         </div>
