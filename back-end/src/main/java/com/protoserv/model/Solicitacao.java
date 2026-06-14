@@ -136,9 +136,9 @@ public class Solicitacao {
     }
 
     public void cancelar() {
-        if (this.status != StatusSolicitacao.NOVO) {
-            throw new IllegalStateException("Apenas solicitações com status NOVO podem ser canceladas.");
-        }
+        if (this.status == StatusSolicitacao.CANCELADA || this.status == StatusSolicitacao.CONCLUIDA) {
+        throw new IllegalStateException("Não é possível cancelar uma solicitação que já foi concluída ou cancelada.");
+    }
         
         this.status = StatusSolicitacao.CANCELADA;
         this.dataConclusao = LocalDateTime.now();
