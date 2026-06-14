@@ -141,6 +141,7 @@ public class Solicitacao {
         }
         
         this.status = StatusSolicitacao.CANCELADA;
+        this.dataConclusao = LocalDateTime.now();
         
         this.adicionarAcompanhamentoSistema("SISTEMA: Solicitação cancelada pelo cidadão.");
     }
