@@ -1,7 +1,6 @@
 package com.protoserv.model;
 
 import jakarta.persistence.*;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -11,7 +10,6 @@ import java.time.LocalDateTime;
 @Table(name = "acompanhamentos")
 @Getter
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id")
 public class Acompanhamento {
 
     @Id
@@ -39,5 +37,18 @@ public class Acompanhamento {
         this.descricao = descricao;
         this.anexoUrl = anexoUrl;
         this.dataRegistro = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Acompanhamento)) return false;
+        Acompanhamento that = (Acompanhamento) o;
+        return id != null && id.equals(that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

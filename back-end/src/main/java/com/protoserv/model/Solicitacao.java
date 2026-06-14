@@ -50,7 +50,7 @@ public class Solicitacao {
     @JoinColumn(name = "atendente_id")
     private Usuario atendente;
 
-    @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "solicitacao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Acompanhamento> acompanhamentos = new ArrayList<>();
 
     public Solicitacao(String protocolo, String descricao, Endereco endereco, Servico servico, Usuario cidadao, String anexoUrl) {
@@ -78,6 +78,10 @@ public class Solicitacao {
     }
 
     public void adicionarAcompanhamento(String descricao, Usuario autor, String anexoUrl) {
+        if (this.status == StatusSolicitacao.CONCLUIDA || this.status == StatusSolicitacao.CANCELADA) {
+            throw new IllegalStateException("Não é possível adicionar acompanhamentos a uma solicitação finalizada.");
+        }
+        
         Acompanhamento novoAcompanhamento = new Acompanhamento(this, autor, descricao, anexoUrl);
         this.acompanhamentos.add(novoAcompanhamento);
     }
@@ -105,6 +109,8 @@ public class Solicitacao {
             throw new IllegalStateException("Não é possível alterar o status de uma solicitação que já foi concluída ou cancelada.");
         }
 
+        StatusSolicitacao statusAnterior = this.status;
+
         if (novoStatus != StatusSolicitacao.NOVO) {
             this.status = novoStatus;
         }else {
@@ -114,6 +120,10 @@ public class Solicitacao {
         if (novoStatus == StatusSolicitacao.CONCLUIDA || novoStatus == StatusSolicitacao.CANCELADA) {
             this.dataConclusao = LocalDateTime.now();
         }
+
+        this.adicionarAcompanhamentoSistema(
+            String.format("SISTEMA: O status da solicitação foi alterado de %s para %s.", statusAnterior, novoStatus)
+        );
     }
 
     public void reclassificar(Servico novoServico, PrioridadeSolicitacao novaPrioridade) {
