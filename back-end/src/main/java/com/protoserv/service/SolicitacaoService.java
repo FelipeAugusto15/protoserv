@@ -162,21 +162,24 @@ public class SolicitacaoService {
     public DadosSolicitacaoDTO reclassificar(Long id, DadosReclassificacaoSolicitacaoDTO dados) {
         var solicitacao = buscarSolicitacao(id);
 
-        StringBuilder mudancas = new StringBuilder("SISTEMA: Reclassificação do chamado. ");
+        StringBuilder mudancas = new StringBuilder("SISTEMA: Reclassificação da solicitação. ");
+        boolean houveMudanca = false;
 
         if (dados.servicoId() != null && !dados.servicoId().equals(solicitacao.getServico().getId())) {
             var novoServico = buscarServico(dados.servicoId());
             
             mudancas.append(String.format("Serviço alterado de '%s' para '%s'. ", solicitacao.getServico().getNome(), novoServico.getNome()));
             solicitacao.reclassificar(novoServico, null);
+            houveMudanca = true;
         }
 
         if (dados.prioridade() != null && !dados.prioridade().equals(solicitacao.getPrioridade())) {
             mudancas.append(String.format("Prioridade alterada para %s. ", dados.prioridade()));
             solicitacao.reclassificar(null, dados.prioridade());
+            houveMudanca = true;
         }
 
-        if (!mudancas.toString().equals("SISTEMA: Reclassificação do chamado. ")) {
+        if (houveMudanca) {
             solicitacao.adicionarAcompanhamentoSistema(mudancas.toString());
         }
 
