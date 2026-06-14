@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +61,7 @@ public class SolicitacaoController {
             @RequestParam(required = false) String estado,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
-            @PageableDefault(size = 10, sort = "dataAbertura,desc") Pageable paginacao) {
+            @PageableDefault(size = 10, sort = "dataAbertura", direction = Sort.Direction.DESC) Pageable paginacao) {
 
         var pagina = solicitacaoService.listarSolicitacoes(status, servicoId, logradouro, bairro, cidade, estado, dataInicial, dataFinal, paginacao);
         
@@ -95,7 +96,7 @@ public class SolicitacaoController {
 
     @GetMapping("/minhas")
     @PreAuthorize("hasAuthority('CIDADAO')")
-    public ResponseEntity<Page<DadosListagemSolicitacaoDTO>> listarMinhas(@PageableDefault(size = 10, sort = {"dataAbertura, desc"}) Pageable paginacao) {
+    public ResponseEntity<Page<DadosListagemSolicitacaoDTO>> listarMinhas(@PageableDefault(size = 10, sort = "dataAbertura", direction = Sort.Direction.DESC) Pageable paginacao) {
         
         var pagina = solicitacaoService.listarMinhasSolicitacoes(paginacao);
 
