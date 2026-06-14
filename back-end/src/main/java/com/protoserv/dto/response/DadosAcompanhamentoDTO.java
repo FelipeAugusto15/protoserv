@@ -4,7 +4,6 @@ import com.protoserv.model.Acompanhamento;
 import java.time.LocalDateTime;
 
 public record DadosAcompanhamentoDTO(
-        Long id,
         String autorNome,
         String autorPerfil,
         String descricao,
@@ -13,7 +12,6 @@ public record DadosAcompanhamentoDTO(
 ) {
     public DadosAcompanhamentoDTO(Acompanhamento acompanhamento) {
         this(
-                acompanhamento.getId(),
                 acompanhamento.getAutor() != null ? acompanhamento.getAutor().getNome() : "SISTEMA",
                 acompanhamento.getAutor() != null ? acompanhamento.getAutor().getPerfil().name() : "SISTEMA",
                 acompanhamento.getDescricao(),
