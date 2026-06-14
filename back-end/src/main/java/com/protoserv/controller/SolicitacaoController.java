@@ -59,11 +59,12 @@ public class SolicitacaoController {
             @RequestParam(required = false) String bairro,
             @RequestParam(required = false) String cidade,
             @RequestParam(required = false) String estado,
+            @RequestParam(required = false) String nomeAtendente,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicial,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFinal,
             @PageableDefault(size = 10, sort = "dataAbertura", direction = Sort.Direction.DESC) Pageable paginacao) {
 
-        var pagina = solicitacaoService.listarSolicitacoes(status, servicoId, logradouro, bairro, cidade, estado, dataInicial, dataFinal, paginacao);
+        var pagina = solicitacaoService.listarSolicitacoes(status, servicoId, logradouro, bairro, cidade, estado, nomeAtendente, dataInicial, dataFinal, paginacao);
         
         return ResponseEntity.ok(pagina);
     }

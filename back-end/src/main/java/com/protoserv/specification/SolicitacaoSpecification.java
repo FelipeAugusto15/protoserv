@@ -19,6 +19,7 @@ public class SolicitacaoSpecification {
             String bairro,
             String cidade,
             String estado,
+            String nomeAtendente,
             LocalDate dataInicial, 
             LocalDate dataFinal) {
 
@@ -58,6 +59,13 @@ public class SolicitacaoSpecification {
                 predicates.add(builder.like(
                         builder.lower(root.get("endereco").get("estado")), 
                         "%" + estado.toLowerCase() + "%"
+                ));
+            }
+
+            if (nomeAtendente != null && !nomeAtendente.trim().isEmpty()) {
+                predicates.add(builder.like(
+                        builder.lower(root.get("atendente").get("nome")), 
+                        "%" + nomeAtendente.toLowerCase() + "%"
                 ));
             }
 

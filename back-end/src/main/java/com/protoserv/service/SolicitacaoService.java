@@ -101,11 +101,12 @@ public class SolicitacaoService {
             String bairro,
             String cidade,
             String estado,
+            String nomeAtendente,
             LocalDate dataInicial,
             LocalDate dataFinal,
             Pageable paginacao) {
 
-        var specification = SolicitacaoSpecification.comFiltros(status, servicoId, logradouro, bairro, cidade, estado, dataInicial, dataFinal);
+        var specification = SolicitacaoSpecification.comFiltros(status, servicoId, logradouro, bairro, cidade, estado, nomeAtendente, dataInicial, dataFinal);
 
         var paginaDeSolicitacoes = solicitacaoRepository.findAll(specification, paginacao);
 
