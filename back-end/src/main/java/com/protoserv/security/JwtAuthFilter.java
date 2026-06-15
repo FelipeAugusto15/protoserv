@@ -26,10 +26,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, 
-                                    HttpServletResponse response, 
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        
+
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -58,10 +58,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 );
 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                 SecurityContextHolder.getContext().setAuthentication(authToken);
             }
         }
+
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("=== AUTH DEBUG ===");
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("Method: " + request.getMethod());
+        System.out.println("Auth: " + auth);
+        System.out.println("Authorities: " + (auth != null ? auth.getAuthorities() : "null"));
+        System.out.println("isAuthenticated: " + (auth != null ? auth.isAuthenticated() : "false"));
+        System.out.println("==================");
 
         filterChain.doFilter(request, response);
     }
