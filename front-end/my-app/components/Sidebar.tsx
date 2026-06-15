@@ -45,7 +45,6 @@ export default function Sidebar() {
         });
 
         if (!response.ok) {
-          // só redireciona se for 401 (token inválido)
           if (response.status === 401) {
             router.push("/login");
           }
@@ -60,7 +59,6 @@ export default function Sidebar() {
         });
 
       } catch (err) {
-        // 🔥 aqui entra quando backend está OFF
         console.warn("Backend offline ou indisponível");
 
         setUsuario({
@@ -81,59 +79,63 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 flex flex-col p-7 min-h-screen"
-      style={{
-        background: "linear-gradient(160deg, #13131f 0%, #0d0d1a 100%)",
-        borderRight: "1px solid rgba(255,255,255,0.07)",
-      }}
-    >
+    <>
+      <aside className="w-64 flex flex-col p-7 h-screen sticky top-0 shrink-0"
+        style={{
+          background: "linear-gradient(160deg, #13131f 0%, #0d0d1a 100%)",
+          borderRight: "1px solid rgba(255,255,255,0.07)",
+        }}
+      >
 
-      <p className="text-[10px] font-medium tracking-[1.5px] uppercase text-white/25 mb-2">
-        Menu
-      </p>
+        <p className="text-[10px] font-medium tracking-[1.5px] uppercase text-white/25 mb-2">
+          Menu
+        </p>
 
-      <nav className="flex flex-col gap-1">
-        {NAV_ITEMS.map(({ href, label, icon }) => {
-          const isActive = pathname === href;
+        <nav className="flex flex-col gap-1">
+          {NAV_ITEMS.map(({ href, label, icon }) => {
+            const isActive = pathname === href;
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-sm"
-              style={{
-                color: isActive ? "#fff" : "rgba(255,255,255,0.45)",
-                background: isActive
-                  ? "rgba(99,102,241,0.2)"
-                  : "transparent"
-              }}
-            >
-              <span>{icon}</span>
-              {label}
-            </Link>
-          );
-        })}
-      </nav>
+            return (
+              <Link
+                key={href}
+                href={href}
+                className="flex items-center gap-3 px-3 py-[11px] rounded-xl text-sm"
+                style={{
+                  color: isActive ? "#fff" : "rgba(255,255,255,0.45)",
+                  background: isActive
+                    ? "rgba(99,102,241,0.2)"
+                    : "transparent"
+                }}
+              >
+                <span>{icon}</span>
+                {label}
+              </Link>
+            );
+          })}
+        </nav>
 
-      <div className="mt-auto pt-5 border-t border-white/10">
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
-          <div>
-            <p className="text-white text-sm font-medium">
-              {loading ? "Carregando..." : usuario.nome}
-            </p>
-            <p className="text-white/40 text-xs">
-              {loading ? "" : usuario.perfil}
-            </p>
+        <div className="mt-auto pt-5 border-t border-white/10">
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-white/5">
+            <div>
+              <p className="text-white text-sm font-medium">
+                {loading ? "Carregando..." : usuario.nome}
+              </p>
+              <p className="text-white/40 text-xs">
+                {loading ? "" : usuario.perfil}
+              </p>
+            </div>
           </div>
         </div>
+      </aside>
 
-        <button
-          onClick={logout}
-          className="w-full mt-3 py-2 rounded-xl text-sm bg-red-500/10 text-red-400 border border-red-500/20"
-        >
-          ⎋ Sair da conta
-        </button>
-      </div>
-    </aside>
+      {/* Botão de logout no canto superior direito da tela */}
+      <button
+        onClick={logout}
+        title="Sair da conta"
+        className="fixed top-4 right-6 z-10 px-4 py-2 rounded-xl text-xs font-medium bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition"
+      >
+        Sair
+      </button>
+    </>
   );
 }
