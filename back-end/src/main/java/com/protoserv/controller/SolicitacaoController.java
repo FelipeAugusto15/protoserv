@@ -70,7 +70,7 @@ public class SolicitacaoController {
     }
 
     @PatchMapping("/{id}/assumir")
-    @PreAuthorize("hasAnyAuthority('ATENDENTE')")
+    @PreAuthorize("hasAnyAuthority('ATENDENTE','ADMIN')")
     public ResponseEntity<DadosSolicitacaoDTO> assumir(@PathVariable Long id) {
         var solicitacaoAtualizada = solicitacaoService.assumirSolicitacao(id);
 
@@ -105,7 +105,7 @@ public class SolicitacaoController {
     }
 
     @PatchMapping("/{id}/classificacao")
-    @PreAuthorize("hasAnyAuthority('ATENDENTE')")
+    @PreAuthorize("hasAnyAuthority('ATENDENTE','ADMIN')")
     public ResponseEntity<DadosSolicitacaoDTO> reclassificar(
             @PathVariable Long id,
             @RequestBody DadosReclassificacaoSolicitacaoDTO dados) {
