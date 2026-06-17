@@ -130,52 +130,60 @@ export default function AdminUsuarios() {
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+
+        if (body?.camposComErro) {
+          const msgs = Object.values(body.camposComErro as Record<string, string>).join("\n");
+          setErroForm(msgs);
+        } else {
+          setErroForm(body?.mensagem || "Erro ao salvar usuário.");
+        }
+        return;
+      }
 
       const salvo: Usuario = await res.json();
       setUsuarioSelecionado(salvo);
       setModoForm("detalhe");
       carregarUsuarios();
-    } catch (e: any) {
-      setErroForm(e.message || "Erro ao salvar usuário.");
+    } catch {
+      setErroForm("Erro de conexão. Tente novamente.");
     } finally {
       setSalvando(false);
     }
   }
 
-async function toggleAtivo(u: Usuario) {
-  try {
-    const token = localStorage.getItem("token");
+  async function toggleAtivo(u: Usuario) {
+    try {
+      const token = localStorage.getItem("token");
 
-    let res: Response;
+      let res: Response;
 
-    if (isAtivo(u)) {
-      // DELETE /usuarios/inativar/{id}
-      res = await fetch(`http://localhost:8080/usuarios/inativar/${u.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-    } else {
-      // PATCH /usuarios/ativar/{id}
-      res = await fetch(`http://localhost:8080/usuarios/ativar/${u.id}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      if (isAtivo(u)) {
+        res = await fetch(`http://localhost:8080/usuarios/inativar/${u.id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      } else {
+        res = await fetch(`http://localhost:8080/usuarios/ativar/${u.id}`, {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      }
+
+      if (!res.ok) throw new Error();
+
+      carregarUsuarios();
+      if (usuarioSelecionado?.id === u.id) {
+        const novoAtivo = !isAtivo(u);
+        setUsuarioSelecionado((prev) =>
+          prev ? { ...prev, ativo: novoAtivo, status: novoAtivo ? "ATIVO" : "INATIVO" } : prev
+        );
+      }
+    } catch {
+      alert("Erro ao alterar status do usuário.");
     }
-
-    if (!res.ok) throw new Error();
-
-    carregarUsuarios();
-    if (usuarioSelecionado?.id === u.id) {
-      const novoAtivo = !isAtivo(u);
-      setUsuarioSelecionado((prev) =>
-        prev ? { ...prev, ativo: novoAtivo, status: novoAtivo ? "ATIVO" : "INATIVO" } : prev
-      );
-    }
-  } catch {
-    alert("Erro ao alterar status do usuário.");
   }
-}
 
   return (
     <main className="flex h-screen bg-gray-900 overflow-hidden">
@@ -362,7 +370,11 @@ async function toggleAtivo(u: Usuario) {
                   </div>
 
                   {erroForm && (
-                    <p className="text-red-600 text-xs font-medium">{erroForm}</p>
+                    <div className="bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                      {erroForm.split("\n").map((linha, i) => (
+                        <p key={i} className="text-red-600 text-xs font-medium">{linha}</p>
+                      ))}
+                    </div>
                   )}
 
                   <div className="flex gap-2 pt-1">
