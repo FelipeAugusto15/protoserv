@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useRef, useState } from "react";
+import toast from "react-hot-toast";
 
 type Protocolo = {
   id: number;
@@ -109,6 +110,7 @@ function formatDate(iso: string) {
   });
 }
 
+// ── PONTO 8 FIX: cor explícita no texto do robô ──
 function MensagemBubble({ msg, perfil }: { msg: Acompanhamento; perfil: string }) {
   const isSistema = msg.autorPerfil === "SISTEMA";
 
@@ -121,8 +123,14 @@ function MensagemBubble({ msg, perfil }: { msg: Acompanhamento; perfil: string }
   if (isSistema) {
     return (
       <div className="flex justify-center my-2">
-        <div className="bg-gray-100 border border-gray-200 text-gray-500 text-xs px-4 py-2 rounded-full">
-          🤖 {msg.descricao} — <span className="text-gray-400">{formatDate(msg.dataRegistro)}</span>
+        {/* fix: forçar cor do texto com style inline para não ser sobrescrita */}
+        <div
+          className="border border-gray-200 text-xs px-4 py-2 rounded-full"
+          style={{ backgroundColor: "#f3f4f6", color: "#6b7280" }}
+        >
+          🤖 <span style={{ color: "#374151" }}>{msg.descricao}</span>
+          {" "}—{" "}
+          <span style={{ color: "#9ca3af" }}>{formatDate(msg.dataRegistro)}</span>
         </div>
       </div>
     );
@@ -177,11 +185,14 @@ export default function Protocolos() {
   const [novoStatus, setNovoStatus] = useState("");
   const [enviando, setEnviando] = useState(false);
 
+  // ponto 9
+  const [reabrindo, setReabrindo] = useState(false);
+  const [confirmarCancelamento, setConfirmarCancelamento] = useState<number | null>(null);
+const [confirmarReabertura, setConfirmarReabertura] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const p = getPerfil();
-    console.log("Perfil detectado:", p);
     setPerfil(p);
     carregarProtocolos(p);
   }, []);
@@ -222,24 +233,69 @@ export default function Protocolos() {
       });
       carregarProtocolos();
     } catch {
-      alert("Erro ao assumir solicitação.");
+      toast.error("Erro ao assumir solicitação.");
     }
   }
 
-  async function cancelarSolicitacaoLista(e: React.MouseEvent, id: number) {
-    e.stopPropagation();
-    if (!confirm("Tem certeza que deseja cancelar esta solicitação?")) return;
-    try {
-      const token = localStorage.getItem("token");
-      await fetch(`http://localhost:8080/solicitacoes/${id}/cancelar`, {
-        method: "PATCH", headers: { Authorization: `Bearer ${token}` },
-      });
-      carregarProtocolos();
-      if (solicitacao?.id === id) fecharPainel();
-    } catch {
-      alert("Erro ao cancelar solicitação.");
+async function cancelarSolicitacao(id: number) {
+  try {
+    const token = localStorage.getItem("token");
+
+    await fetch(`http://localhost:8080/solicitacoes/${id}/cancelar`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    toast.success("Solicitação cancelada com sucesso!");
+
+    setConfirmarCancelamento(null);
+
+    carregarProtocolos();
+
+    if (solicitacao?.id === id) {
+      fecharPainel();
     }
+  } catch {
+    toast.error("Erro ao cancelar solicitação.");
   }
+}
+
+async function reabrirSolicitacao() {
+  if (!solicitacao) return;
+
+  setReabrindo(true);
+
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch(
+      `http://localhost:8080/solicitacoes/${solicitacao.id}/reabrir`,
+      {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error();
+    }
+
+    toast.success("Solicitação reaberta com sucesso!");
+
+    setConfirmarReabertura(false);
+
+    await recarregarChat();
+    carregarProtocolos();
+  } catch {
+    toast.error("Erro ao reabrir solicitação.");
+  } finally {
+    setReabrindo(false);
+  }
+}
 
   async function abrirPainel(id: number) {
     setPainelAberto(true);
@@ -278,21 +334,13 @@ export default function Protocolos() {
     } catch {}
   }
 
-  // Envia mensagem (status é opcional junto)
   async function enviarMensagem() {
     if (!mensagem.trim() || !solicitacao) return;
-
     setEnviando(true);
     try {
       const token = localStorage.getItem("token");
-
-      const body: Record<string, string> = {
-        descricao: mensagem.trim(),
-        anexoUrl: "",
-      };
-
+      const body: Record<string, string> = { descricao: mensagem.trim(), anexoUrl: "" };
       if (novoStatus) body.novoStatus = novoStatus;
-
       const res = await fetch(
         `http://localhost:8080/solicitacoes/${solicitacao.id}/acompanhamentos`,
         {
@@ -301,33 +349,24 @@ export default function Protocolos() {
           body: JSON.stringify(body),
         }
       );
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error("Erro backend:", err);
-        throw new Error(err);
-      }
-
+      if (!res.ok) throw new Error(await res.text());
       setMensagem("");
       setNovoStatus("");
       await recarregarChat();
       carregarProtocolos();
     } catch (e) {
       console.error(e);
-      alert("Erro ao enviar mensagem. Veja o console para detalhes.");
+      toast.error("Erro ao enviar mensagem.");
     } finally {
       setEnviando(false);
     }
   }
 
-  // Atualiza só o status, sem precisar digitar mensagem
   async function atualizarSomenteStatus() {
     if (!novoStatus || !solicitacao) return;
-
     setEnviando(true);
     try {
       const token = localStorage.getItem("token");
-
       const res = await fetch(
         `http://localhost:8080/solicitacoes/${solicitacao.id}/acompanhamentos`,
         {
@@ -340,19 +379,13 @@ export default function Protocolos() {
           }),
         }
       );
-
-      if (!res.ok) {
-        const err = await res.text();
-        console.error("Erro backend:", err);
-        throw new Error(err);
-      }
-
+      if (!res.ok) throw new Error(await res.text());
       setNovoStatus("");
       await recarregarChat();
       carregarProtocolos();
     } catch (e) {
       console.error(e);
-      alert("Erro ao atualizar status. Veja o console para detalhes.");
+      toast.error("Erro ao atualizar status.");
     } finally {
       setEnviando(false);
     }
@@ -450,12 +483,15 @@ export default function Protocolos() {
                       )}
 
                       {isCidadao && !statusFinal(item.status) && (
-                        <button
-                          onClick={(e) => cancelarSolicitacaoLista(e, item.id)}
-                          className="bg-red-700 hover:bg-red-800 text-white px-4 py-1 rounded-lg text-sm"
-                        >
-                          Cancelar
-                        </button>
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setConfirmarCancelamento(item.id);
+  }}
+  className="bg-red-700 hover:bg-red-800 text-white px-4 py-1 rounded-lg text-sm"
+>
+  Cancelar
+</button>
                       )}
                     </div>
                   </div>
@@ -465,6 +501,7 @@ export default function Protocolos() {
           </div>
         </div>
 
+        {/* ── PAINEL LATERAL ── */}
         {painelAberto && (
           <aside className="relative z-20 w-[420px] shrink-0 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
 
@@ -517,6 +554,7 @@ export default function Protocolos() {
               </div>
             )}
 
+            {/* Chat */}
             <div className="flex-1 overflow-y-auto px-5 py-4">
               {loadingChat ? (
                 <p className="text-center text-gray-400 mt-10 text-sm">Carregando conversa...</p>
@@ -541,10 +579,9 @@ export default function Protocolos() {
               <div ref={bottomRef} />
             </div>
 
+            {/* ── FOOTER DO PAINEL: aberto ── */}
             {!loadingChat && !erroChat && solicitacao && !isStatusFinal(solicitacao.status) && (
               <div className="border-t border-gray-200 px-5 py-4 shrink-0">
-
-                {/* Bloco de status — separado do chat, só atendente/admin */}
                 {isAtendente && (
                   <div className="mb-4 pb-4 border-b border-gray-100">
                     <label className="text-xs font-semibold text-gray-600 mb-1 block">
@@ -572,7 +609,6 @@ export default function Protocolos() {
                   </div>
                 )}
 
-                {/* Chat input — todos podem enviar mensagem */}
                 <div className="flex gap-2 items-end">
                   <textarea
                     value={mensagem}
@@ -581,11 +617,7 @@ export default function Protocolos() {
                       if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
                     }}
                     rows={2}
-                    placeholder={
-                      isCidadao
-                        ? "Escreva uma mensagem para o atendente..."
-                        : "Escreva uma mensagem para o cidadão..."
-                    }
+                    placeholder={isCidadao ? "Escreva uma mensagem para o atendente..." : "Escreva uma mensagem para o cidadão..."}
                     className="flex-1 resize-none border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50"
                   />
                   <button
@@ -599,25 +631,116 @@ export default function Protocolos() {
 
                 {isCidadao && (
                   <div className="mt-3 flex justify-end">
-                    <button
-                      onClick={(e) => { fecharPainel(); cancelarSolicitacaoLista(e, solicitacao.id); }}
-                      className="text-red-600 hover:text-red-800 text-xs font-medium underline transition"
-                    >
-                      Cancelar solicitação
-                    </button>
+<button
+  onClick={() => {
+    setConfirmarCancelamento(solicitacao.id);
+  }}
+  className="text-red-600 hover:text-red-800 text-xs font-medium underline transition"
+>
+  Cancelar solicitação
+</button>
                   </div>
                 )}
+                
               </div>
             )}
 
+            {/* ── FOOTER DO PAINEL: status final ── */}
             {!loadingChat && !erroChat && solicitacao && isStatusFinal(solicitacao.status) && (
-              <div className="border-t border-gray-200 px-5 py-3 text-center text-xs text-gray-400 shrink-0 bg-gray-50">
-                Solicitação <strong>{getStatusLabel(solicitacao.status).toLowerCase()}</strong> — sem novas mensagens.
+              <div className="border-t border-gray-200 px-5 py-4 shrink-0 bg-gray-50 flex flex-col gap-3">
+                <p className="text-center text-xs text-gray-400">
+                  Solicitação <strong>{getStatusLabel(solicitacao.status).toLowerCase()}</strong>.
+                </p>
+
+
+                {/* Atendente/admin também pode reabrir se quiser — adapte conforme regra de negócio */}
+{solicitacao.status === "CANCELADA" && isCidadao && (
+  <button
+    onClick={() => setConfirmarReabertura(true)}
+    disabled={reabrindo}
+    className="w-full bg-blue-700 hover:bg-blue-800 disabled:opacity-50 text-white py-2 rounded-xl text-sm font-semibold transition"
+  >
+    {reabrindo ? "Reabrindo..." : "🔄 Reabrir solicitação"}
+  </button>
+)}
+
               </div>
             )}
           </aside>
         )}
       </div>
+
+      {confirmarReabertura && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-[400px]">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              Reabrir Solicitação
+            </h2>
+
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja reabrir esta solicitação?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmarReabertura(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800"
+              >
+                Voltar
+              </button>
+
+              <button
+                onClick={reabrirSolicitacao}
+                style={{
+                  backgroundColor: "#2563eb",
+                  color: "#ffffff",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                }}
+              >
+                Sim, reabrir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmarCancelamento && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-[400px]">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              Cancelar Solicitação
+            </h2>
+
+            <p className="text-gray-600 mb-6">
+              Tem certeza que deseja cancelar esta solicitação?
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmarCancelamento(null)}
+                className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300"
+              >
+                Voltar
+              </button>
+
+              <button
+                onClick={() => cancelarSolicitacao(confirmarCancelamento)}
+                style={{
+                  backgroundColor: "#dc2626",
+                  color: "#ffffff",
+                  padding: "8px 16px",
+                  borderRadius: "8px",
+                  fontWeight: "bold",
+                }}
+              >
+                Sim, cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
