@@ -8,23 +8,22 @@ type Servico = {
   id: number;
   nome: string;
   descricao: string;
-  icone: string;
 };
 
-const servicosFixos: Servico[] = [
-  { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas", icone: "💡" },
-  { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta", icone: "🗑️" },
-  { id: 3, nome: "Infraestrutura", descricao: "Buracos, ruas e calçadas", icone: "🚧" },
-  { id: 4, nome: "Limpeza Urbana", descricao: "Entulhos e terrenos sujos", icone: "🧹" },
-  { id: 5, nome: "Vazamento de Água", descricao: "Problemas na rede", icone: "💧" },
-  { id: 6, nome: "Outros", descricao: "Outras solicitações", icone: "📌" },
-];
+const iconesPorNome: Record<string, string> = {
+  "Iluminação Pública": "💡",
+  "Coleta de Lixo": "🗑️",
+  "Infraestrutura": "🚧",
+  "Limpeza Urbana": "🧹",
+  "Vazamento de Água": "💧",
+  "Outros": "📌",
+};
 
 export default function Servicos() {
-  const [servicos, setServicos] = useState<Servico[]>(servicosFixos);
+  const [servicos, setServicos] = useState<Servico[]>([]);
   const [servicoSelecionado, setServicoSelecionado] = useState<Servico | null>(null);
   const [busca, setBusca] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [enviando, setEnviando] = useState(false);
 
   useEffect(() => {
@@ -44,14 +43,19 @@ export default function Servicos() {
       if (!res.ok) throw new Error("Erro ao buscar serviços");
 
       const data = await res.json();
-
       const lista = Array.isArray(data) ? data : data.content ?? [];
-
-      if (lista.length > 0) {
-        setServicos(lista);
-      }
+      setServicos(lista);
     } catch (err) {
       console.error("Erro ao carregar serviços:", err);
+      // fallback com serviços fixos se o backend falhar
+      setServicos([
+        { id: 1, nome: "Iluminação Pública", descricao: "Postes ou lâmpadas apagadas" },
+        { id: 2, nome: "Coleta de Lixo", descricao: "Acúmulo ou falta de coleta" },
+        { id: 3, nome: "Infraestrutura", descricao: "Buracos, ruas e calçadas" },
+        { id: 4, nome: "Limpeza Urbana", descricao: "Entulhos e terrenos sujos" },
+        { id: 5, nome: "Vazamento de Água", descricao: "Problemas na rede" },
+        { id: 6, nome: "Outros", descricao: "Outras solicitações" },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -126,7 +130,6 @@ export default function Servicos() {
       }
 
       const data = JSON.parse(text);
-
       toast.success(`Solicitação criada! Protocolo: ${data.protocolo}`);
 
       setTimeout(() => {
@@ -174,7 +177,9 @@ export default function Servicos() {
                       onClick={() => setServicoSelecionado(s)}
                       className="bg-white p-5 rounded-xl border cursor-pointer hover:border-blue-500"
                     >
-                      <div className="text-2xl">{s.icone}</div>
+                      <div className="text-2xl" suppressHydrationWarning>
+                        {iconesPorNome[s.nome] ?? "📋"}
+                      </div>
                       <h3 className="font-bold">{s.nome}</h3>
                       <p className="text-sm text-gray-600">{s.descricao}</p>
                     </div>
@@ -199,7 +204,7 @@ export default function Servicos() {
               </button>
 
               <h2 className="text-2xl font-bold mb-4">
-                {servicoSelecionado.nome}
+                {iconesPorNome[servicoSelecionado.nome] ?? "📋"} {servicoSelecionado.nome}
               </h2>
 
               <form onSubmit={abrirSolicitacao} className="space-y-3">
