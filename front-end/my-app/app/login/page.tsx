@@ -6,6 +6,7 @@ import Button from "@/components/Button";
 import Logo from "@/components/Logo";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -32,29 +33,32 @@ export default function LoginPage() {
       );
 
       if (!response.ok) {
-        alert("E-mail ou senha inválidos");
+        toast.error("E-mail ou senha inválidos");
         return;
       }
 
       const data = await response.json();
 
-      //LIMPA TOKEN ANTIGO (boa prática)
+      // Limpa token antigo
       localStorage.removeItem("token");
 
-      // SALVA NOVO TOKEN
+      // Salva novo token
       if (data?.token) {
         localStorage.setItem("token", data.token);
       } else {
-        alert("Erro ao obter token");
+        toast.error("Erro ao obter token");
         return;
       }
 
-      alert("Login realizado com sucesso!");
+      toast.success("Login realizado com sucesso!");
 
-      router.push("/");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
+
     } catch (error) {
       console.error("Erro ao fazer login:", error);
-      alert("Erro ao conectar com o servidor.");
+      toast.error("Erro ao conectar com o servidor.");
     }
   };
 
