@@ -1,6 +1,5 @@
 "use client";
 
-
 import toast from "react-hot-toast";
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useState } from "react";
@@ -71,8 +70,6 @@ export default function Servicos() {
 
     const token = localStorage.getItem("token");
 
-    console.log("TOKEN:", token);
-
     if (!token || token.split(".").length !== 3) {
       toast.error("Token inválido ou expirado");
       setEnviando(false);
@@ -104,10 +101,8 @@ export default function Servicos() {
       bairro,
       cidade,
       estado,
-      complemento:
-        (form.elements.namedItem("complemento") as HTMLInputElement).value || "",
-      anexoUrl:
-        (form.elements.namedItem("anexoUrl") as HTMLInputElement).value || ""
+      complemento: (form.elements.namedItem("complemento") as HTMLInputElement).value || "",
+      anexoUrl: (form.elements.namedItem("anexoUrl") as HTMLInputElement).value || "",
     };
 
     try {
@@ -134,8 +129,9 @@ export default function Servicos() {
 
       toast.success(`Solicitação criada! Protocolo: ${data.protocolo}`);
 
-      form.reset();
-      setServicoSelecionado(null);
+      setTimeout(() => {
+        window.location.href = "/protocolos";
+      }, 1500);
 
     } catch (err) {
       console.error(err);
