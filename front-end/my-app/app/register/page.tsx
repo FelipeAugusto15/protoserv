@@ -5,6 +5,7 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Logo from "@/components/Logo";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -31,7 +32,7 @@ export default function RegisterPage() {
       );
 
       if (!response.ok) {
-        alert("Erro ao realizar cadastro");
+        toast.error("Erro ao realizar cadastro");
         return;
       }
 
@@ -39,12 +40,15 @@ export default function RegisterPage() {
 
       localStorage.setItem("token", data.token);
 
-      alert("Cadastro realizado com sucesso!");
+      toast.success("Cadastro realizado com sucesso!");
 
-      window.location.href = "/";
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1500);
+
     } catch (error) {
       console.error("Erro ao cadastrar:", error);
-      alert("Erro ao conectar com o servidor.");
+      toast.error("Erro ao conectar com o servidor.");
     }
   };
 
