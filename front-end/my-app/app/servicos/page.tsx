@@ -1,5 +1,7 @@
 "use client";
 
+
+import toast from "react-hot-toast";
 import Sidebar from "@/components/Sidebar";
 import { useEffect, useState } from "react";
 
@@ -72,7 +74,7 @@ export default function Servicos() {
     console.log("TOKEN:", token);
 
     if (!token || token.split(".").length !== 3) {
-      alert("Token inválido ou expirado");
+      toast.error("Token inválido ou expirado");
       setEnviando(false);
       return;
     }
@@ -88,7 +90,7 @@ export default function Servicos() {
     const estado = (form.elements.namedItem("estado") as HTMLInputElement).value;
 
     if (!descricao || !cep || !logradouro || !numero || !bairro || !cidade || !estado) {
-      alert("Preencha todos os campos obrigatórios");
+      toast.error("Preencha todos os campos obrigatórios");
       setEnviando(false);
       return;
     }
@@ -123,21 +125,21 @@ export default function Servicos() {
       if (!res.ok) {
         console.log("STATUS:", res.status);
         console.log("ERROR BODY:", text);
-        alert(`Erro ao enviar solicitação (${res.status})`);
+        toast.error(`Erro ao enviar solicitação (${res.status})`);
         setEnviando(false);
         return;
       }
 
       const data = JSON.parse(text);
 
-      alert("Solicitação criada! Protocolo: " + data.protocolo);
+      toast.success(`Solicitação criada! Protocolo: ${data.protocolo}`);
 
       form.reset();
       setServicoSelecionado(null);
 
     } catch (err) {
       console.error(err);
-      alert("Erro de conexão com servidor");
+      toast.error("Erro de conexão com servidor");
     } finally {
       setEnviando(false);
     }
