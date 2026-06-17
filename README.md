@@ -6,7 +6,7 @@ O **PROTOSERV** é um sistema desenvolvido como parte da disciplina de Fábrica 
 
 ---
 
-## 👥 1. Identificação da Equipe
+## 1.Identificação da Equipe
 
 * **Eduardo Alan dos Santos**
 * **Felipe Augusto Graniska**
@@ -22,7 +22,7 @@ O **PROTOSERV** é um sistema desenvolvido como parte da disciplina de Fábrica 
 
 ---
 
-## 🎨 2. Design do Projeto (Figma)
+## 2.Design do Projeto (Figma)
 
 O layout e a prototipação do sistema podem ser visualizados nos links abaixo:
 * [Layout Principal - Figma](https://www.figma.com/design/pCxmpGaJld5fQ8SSWkifQu/Layout-Projetp?node-id=0-1&t=6xnH79asLDjx1iRa-1)
@@ -30,7 +30,7 @@ O layout e a prototipação do sistema podem ser visualizados nos links abaixo:
 
 ---
 
-## 🛠️ 3. Tecnologias Utilizadas
+## 3.Tecnologias Utilizadas
 
 O projeto utiliza o seguinte conjunto de tecnologias principais:
 * **Framework**: Next.js 16.1.6
@@ -44,7 +44,7 @@ O projeto utiliza o seguinte conjunto de tecnologias principais:
 
 ---
 
-## 🚀 4. Como Rodar o Projeto
+## 4.Como Rodar o Projeto
 
 Para instanciar o ambiente completo (Aplicação + Banco de Dados), utilize o Docker Compose na raiz do repositório.
 
@@ -77,7 +77,7 @@ DATABASE_URL=mysql://user_protoserv:password_aqui@db:3306/protoserv_db
 
 ---
 
-## 📁 5. Estrutura de Pastas (Frontend)
+## 5.Estrutura de Pastas (Frontend)
 
 ```text
 protoserv/
@@ -109,26 +109,26 @@ protoserv/
 
 ---
 
-## ✨ 6. Funcionalidades Implementadas
+## 6.Funcionalidades Implementadas
 
-### 🔐 Autenticação e Perfis
+### Autenticação e Perfis
 * Login com e-mail e senha via API REST (`/autenticacao/login`)
 * Token JWT armazenado no `localStorage` e enviado em todas as requisições
 * Três perfis de acesso com menus e permissões distintas: **Cidadão**, **Atendente** e **Administrador**
 * Redirecionamento automático para login quando o token é inválido ou ausente
 
-### 🏠 Painel Principal
+### Painel Principal
 * Dashboard com 3 ações rápidas: **Solicitar Serviço**, **Acompanhar Protocolo** e **Suporte**
 * Widget de chatbot de suporte integrado diretamente na home
 
-### ⚙️ Solicitação de Serviços (`/servicos`)
+### Solicitação de Serviços (`/servicos`)
 * Listagem de serviços disponíveis com ícones (Iluminação Pública, Coleta de Lixo, Infraestrutura, Limpeza Urbana, Vazamento de Água, Outros)
 * Busca e filtro de serviços em tempo real
 * Formulário completo com: descrição, endereço completo (CEP, logradouro, número, bairro, cidade, estado, complemento) e link de anexo opcional
 * Fallback automático com serviços fixos caso o backend esteja indisponível
 * Redirecionamento automático para protocolos após abertura bem-sucedida
 
-### 📋 Acompanhamento de Protocolos (`/protocolos`)
+### Acompanhamento de Protocolos (`/protocolos`)
 * Visão diferenciada por perfil:
   * **Cidadão**: visualiza apenas suas próprias solicitações
   * **Atendente / Admin**: visualiza todas as solicitações com informações de solicitante
@@ -138,7 +138,7 @@ protoserv/
 * Cidadão pode **cancelar** solicitações em aberto
 * Cidadão pode **reabrir** solicitações canceladas (com modal de confirmação)
 
-### 💬 Chat por Protocolo (painel lateral)
+### Chat por Protocolo (painel lateral)
 * Painel lateral deslizante com histórico completo de mensagens
 * Conversa em tempo real entre cidadão e atendente com bolhas de chat diferenciadas
 * Mensagens automáticas do sistema ao mudar status (ex: "Status alterado para: Em andamento")
@@ -146,11 +146,11 @@ protoserv/
 * Scroll automático para a última mensagem
 * Exibição de dados completos da solicitação (endereço, descrição, prioridade, atendente)
 
-### 👤 Perfil do Usuário (`/perfil`)
+### Perfil do Usuário (`/perfil`)
 * Visualização e edição de nome e e-mail
 * Troca de senha com validação de senha atual
 
-### 🛠️ Painel Administrativo (`/admin`) — somente Admin
+### Painel Administrativo (`/admin`) — somente Admin
 * **Gerenciar Serviços** (`/admin/servicos`):
   * Listagem com nome, descrição, categoria, prazo e status (ativo/inativo)
   * Criar novo serviço com emoji, categoria e prazo em dias
@@ -161,19 +161,19 @@ protoserv/
   * Criar novos usuários com definição de perfil (Cidadão, Atendente, Admin)
   * Editar dados e ativar/desativar usuários
 
-### 🤖 Chatbot de Suporte
+### Chatbot de Suporte
 * Bot embutido na home com respostas automáticas a perguntas frequentes
 * Sugestões rápidas de ações clicáveis (abrir protocolo, acompanhar, ajuda)
 * Reconhece saudações, dúvidas sobre serviços, protocolos, login e navegação
 
-### 🧭 Sidebar Inteligente
+### Sidebar Inteligente
 * Navegação adaptada automaticamente ao perfil do usuário logado
 * Exibe nome, perfil e inicial do usuário logado
 * Botão de logout integrado
 
 ---
 
-## 🔌 7. API Backend
+## 7.API Backend
 
 O frontend consome uma API REST rodando em `http://localhost:8080`. Principais endpoints utilizados:
 
